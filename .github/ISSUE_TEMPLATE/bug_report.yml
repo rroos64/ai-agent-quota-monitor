@@ -1,0 +1,102 @@
+name: Bug report
+description: Report a defect in AIQM polling, desklet rendering, TUI, or CLI
+title: "[BUG] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Security note:** do not paste `auth.json`, OAuth tokens, cookies, or raw provider
+        responses. Redact email addresses if you prefer.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened vs. what you expected.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Provider(s) affected
+      multiple: true
+      options:
+        - Codex
+        - Claude Code
+        - Not provider-specific
+    validations:
+      required: true
+
+  - type: input
+    id: node_version
+    attributes:
+      label: Node.js version
+      placeholder: "node -v"
+    validations:
+      required: true
+
+  - type: input
+    id: aiqm_version
+    attributes:
+      label: AIQM version
+      placeholder: "aiqm --version"
+    validations:
+      required: true
+
+  - type: input
+    id: cinnamon_version
+    attributes:
+      label: Cinnamon version (if desklet-related)
+      placeholder: "cinnamon --version"
+
+  - type: input
+    id: distro
+    attributes:
+      label: OS / distro
+      placeholder: "e.g. LMDE 6, Linux Mint 22"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant output
+      description: Paste redacted `aiqm poll --json` output, desklet console errors, or systemd logs.
+      placeholder: |
+        systemctl --user status aiqm-poll.timer
+        journalctl --user -u aiqm-poll.service -n 50
+      render: shell
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Screenshots, redacted latest.json excerpt, related issues, etc.

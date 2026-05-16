@@ -1,0 +1,29 @@
+{
+  "latest-state-file": {
+    "type": "filechooser",
+    "description": "latest.json path",
+    "tooltip": "Path to the normalized latest.json written by the AIQM helper",
+    "default": "~/.local/share/ai-agent-quota-monitor/latest.json"
+  },
+  "poll-command": {
+    "type": "entry",
+    "description": "Poll command",
+    "tooltip": "Command the desklet runs on a timer. It should update latest.json and must not print secrets.",
+    "default": "aiqm poll --json"
+  },
+  "poll-interval-seconds": {
+    "type": "spinbutton",
+    "description": "Poll interval seconds",
+    "tooltip": "How often the desklet asks the helper to refresh latest.json",
+    "default": 300,
+    "min": 30,
+    "max": 86400,
+    "step": 30
+  },
+  "setup-command": {
+    "type": "entry",
+    "description": "Setup command",
+    "tooltip": "Command launched from the desklet setup action",
+    "default": "aiqm-setup-terminal"
+  }
+}

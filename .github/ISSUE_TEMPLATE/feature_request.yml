@@ -1,0 +1,71 @@
+name: Feature request
+description: Propose a new provider, desklet capability, CLI command, or UX improvement
+title: "[FEATURE] "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Plain-English outcome
+      description: |
+        Describe what should happen in non-technical terms.
+        If you cannot write this, you are not ready to propose the change.
+      placeholder: "When ..., AIQM should ..., so that ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation plan
+      description: How will you know the outcome was reached?
+      placeholder: "I will know this works when ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: related
+    attributes:
+      label: Related documents
+      description: Link or name the relevant items.
+      placeholder: |
+        - BRD / AC:
+        - TSD / architecture:
+        - Boundary contract:
+        - Backlog item (BACK-xxx):
+        - Test traceability row:
+
+  - type: checkboxes
+    id: layer
+    attributes:
+      label: Layer(s) affected
+      options:
+        - label: Provider adapter (new provider or quota endpoint)
+        - label: Polling service / back-off logic
+        - label: No-Brainer Score / ranking
+        - label: Desklet display
+        - label: TUI / setup flow
+        - label: CLI command
+        - label: Installer / systemd units
+        - label: Documentation only
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you evaluated and why you discarded them.
+
+  - type: textarea
+    id: security
+    attributes:
+      label: Security / privacy considerations
+      description: |
+        Does this touch auth tokens, OAuth flows, provider credentials, or log output?
+        Note the relevant constraint (e.g. AIQM-owned isolated profile, no secret in logs).
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Mockups, related issues, upstream API links, etc.

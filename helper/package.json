@@ -1,0 +1,52 @@
+{
+  "name": "@ai-agent-quota-monitor/helper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Node.js helper CLI for AI Agent Quota Monitor.",
+  "type": "module",
+  "bin": {
+    "aiqm": "./dist/cli/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --passWithNoTests",
+    "test:unit": "vitest run --passWithNoTests",
+    "test:contract": "vitest run --passWithNoTests tests/contract src/**/*.contract.test.ts",
+    "test:integration": "vitest run --passWithNoTests tests/integration src/**/*.integration.test.ts",
+    "test:cli": "vitest run --passWithNoTests tests/cli src/cli/**/*.test.ts",
+    "test:tui": "vitest run --passWithNoTests tests/tui src/tui/**/*.test.tsx",
+    "test:desklet": "echo \"No desklet tests configured yet\"",
+    "test:security": "npm audit --audit-level=high",
+    "coverage": "vitest run --coverage --passWithNoTests",
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "ci": "npm run typecheck && npm run lint && npm run format:check && npm test"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "ink": "^5.2.1",
+    "react": "^18.3.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.17",
+    "@vitest/coverage-v8": "^2.1.8",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.2",
+    "vitest": "^2.1.8"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

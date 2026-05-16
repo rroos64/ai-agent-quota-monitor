@@ -1,0 +1,22 @@
+{
+  "account": {
+    "email": "claude-user@example.test",
+    "subscriptionType": "pro"
+  },
+  "limits": [
+    {
+      "id": "claude-code:5h",
+      "name": "5-hour Claude Code limit",
+      "usedPercent": 42.5,
+      "windowDurationMins": 300,
+      "resetsAt": "2026-05-14T18:00:00.000Z"
+    },
+    {
+      "id": "claude-code:weekly",
+      "name": "Weekly Claude Code limit",
+      "usedPercent": 61,
+      "windowDurationMins": 10080,
+      "resetsAt": "2026-05-19T00:00:00.000Z"
+    }
+  ]
+}

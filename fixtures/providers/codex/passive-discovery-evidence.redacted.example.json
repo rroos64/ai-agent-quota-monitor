@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "1",
+  "provider": "codex",
+  "mode": "codex_login",
+  "generatedAt": "2026-05-12T00:00:00.000Z",
+  "cliVersion": "codex-cli 0.130.0",
+  "loginStatus": "logged_in",
+  "emptyHomeStatus": "not_logged_in",
+  "files": [
+    {
+      "path": "auth.json",
+      "type": "file",
+      "mode": "0600"
+    },
+    {
+      "path": "memories",
+      "type": "directory",
+      "mode": "0700"
+    }
+  ],
+  "discoveredCommands": ["login", "debug", "features"],
+  "probes": [
+    {
+      "commandLabel": "codex --help",
+      "classification": "passive_only",
+      "exitCode": 0,
+      "summary": "Codex CLI",
+      "passive": true,
+      "opensAgentSession": false,
+      "quotaDataFound": false,
+      "unsafeReason": null
+    },
+    {
+      "commandLabel": "codex login status",
+      "classification": "unsupported",
+      "exitCode": 0,
+      "summary": "Logged in as [REDACTED_EMAIL]",
+      "passive": true,
+      "opensAgentSession": false,
+      "quotaDataFound": false,
+      "unsafeReason": null
+    }
+  ],
+  "safety": {
+    "rawStdoutStored": false,
+    "rawStderrStored": false,
+    "tokenContentsStored": false,
+    "urlsRedacted": true,
+    "emailsRedacted": true
+  }
+}

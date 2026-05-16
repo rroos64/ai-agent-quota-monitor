@@ -1,0 +1,89 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+.npm/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Build and coverage output
+dist/
+build/
+out/
+coverage/
+*.tsbuildinfo
+.vite/
+
+# Test artifacts
+.vitest/
+playwright-report/
+test-results/
+
+# ESLint / Prettier caches
+.eslintcache
+.prettier-cache
+
+# Ink / Commander CLI runtime artifacts
+*.pid
+*.sock
+
+# Cinnamon desklet packaged/generated artifacts
+*.zip
+*.tar.gz
+*.tgz
+files/*.zip
+files/*.tar.gz
+files/*.tgz
+
+# Local app data and caches
+.cache/
+.tmp/
+tmp/
+temp/
+data/
+.local-data/
+app-data/
+.cache-data/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment, secrets, and tokens
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+*.cert
+*.crt
+secrets/
+tokens/
+/tokens.json
+*.token
+*.secret
+
+# OS files
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+Desktop.ini
+
+# Editor / IDE files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~

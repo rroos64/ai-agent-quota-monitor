@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.aiqm/contracts/v1/history-entry.schema.json",
+  "title": "AIQM History Entry",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "timestamp",
+    "provider",
+    "email",
+    "quotaWindow",
+    "usedPercentage",
+    "resetAt",
+    "status"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provider": {
+      "enum": [
+        "fake",
+        "codex",
+        "antigravity",
+        "claude-code"
+      ]
+    },
+    "email": {
+      "type": "string"
+    },
+    "quotaWindow": {
+      "type": "string"
+    },
+    "usedPercentage": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 100
+    },
+    "resetAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "status": {
+      "enum": [
+        "fresh",
+        "stale",
+        "unavailable",
+        "auth_required",
+        "offline",
+        "provider_error",
+        "config_error"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

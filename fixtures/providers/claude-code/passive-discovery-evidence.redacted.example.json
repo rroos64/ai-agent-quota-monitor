@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1",
+  "provider": "claude-code",
+  "discovery": "passive-cli-contract-validation",
+  "validatedAt": "2026-05-14T00:00:00.000Z",
+  "commands": [
+    {
+      "command": "claude --version",
+      "observedShape": "text version banner",
+      "redactedOutputExample": "2.1.138 (Claude Code)",
+      "credentialBearing": false
+    },
+    {
+      "command": "claude auth status",
+      "observedShape": "json object with loggedIn/authMethod/apiProvider/email/orgId/orgName/subscriptionType",
+      "redactedFixture": "auth-status.redacted.example.json",
+      "credentialBearing": false,
+      "notes": "Email and organization values must be redacted in committed evidence. Auth status validates identity/subscription metadata only; it is not a quota endpoint."
+    }
+  ],
+  "quotaEndpointStatus": "not-validated",
+  "safetyNotes": [
+    "Do not run prompts, agent sessions, remote control, reviews, or any command that could consume Claude Code model quota during polling.",
+    "Do not commit ~/.claude/.credentials.json, keychain-derived tokens, raw debug logs, or unredacted auth status output.",
+    "Production Claude quota polling remains blocked until a read-only Anthropic/Claude Code quota source is validated."
+  ]
+}

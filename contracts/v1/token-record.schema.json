@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.aiqm/contracts/v1/token-record.schema.json",
+  "title": "AIQM Token File",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "tokens"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1"
+    },
+    "tokens": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "schemaVersion",
+          "accountId",
+          "provider",
+          "email",
+          "createdAt",
+          "updatedAt",
+          "tokenType",
+          "tokenPayload"
+        ],
+        "properties": {
+          "schemaVersion": {
+            "const": "1"
+          },
+          "accountId": {
+            "type": "string"
+          },
+          "provider": {
+            "enum": [
+              "fake",
+              "codex",
+              "antigravity",
+              "claude-code"
+            ]
+          },
+          "email": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "tokenType": {
+            "type": "string"
+          },
+          "tokenPayload": {
+            "type": "object"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

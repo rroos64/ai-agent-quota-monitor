@@ -1,0 +1,24 @@
+{
+  "name": "ai-agent-quota-monitor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local-first AI coding-agent quota monitor with a TypeScript helper and Cinnamon desklet.",
+  "scripts": {
+    "install:helper": "npm --prefix helper ci",
+    "install:local": "bash scripts/aiqm-local.sh install",
+    "setup:local": "bash scripts/aiqm-local.sh setup",
+    "uninstall:local": "bash scripts/aiqm-local.sh uninstall",
+    "install:helper-local": "bash scripts/aiqm-local.sh install",
+    "install:desklet": "bash scripts/internal/install-desklet.sh",
+    "build": "npm --prefix helper run build",
+    "typecheck": "npm --prefix helper run typecheck",
+    "lint": "npm --prefix helper run lint",
+    "format:check": "npm --prefix helper run format:check",
+    "test": "npm --prefix helper test",
+    "validate:dev-flow": "bash scripts/internal/validate-dev-flow.sh",
+    "ci": "npm run typecheck && npm run lint && npm run format:check && npm test && npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

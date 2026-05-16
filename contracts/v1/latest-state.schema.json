@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.aiqm/contracts/v1/latest-state.schema.json",
+  "title": "AIQM Latest State",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "generatedAt",
+    "accounts"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "accounts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/accountQuotaCard"
+      }
+    }
+  },
+  "$defs": {
+    "providerId": {
+      "enum": [
+        "fake",
+        "codex",
+        "antigravity",
+        "claude-code"
+      ]
+    },
+    "accountStatus": {
+      "enum": [
+        "fresh",
+        "stale",
+        "unavailable",
+        "auth_required",
+        "offline",
+        "provider_error",
+        "config_error"
+      ]
+    },
+    "quotaWindow": {
+      "type": "object",
+      "required": [
+        "id",
+        "providerWindowName",
+        "usedPercentage",
+        "resetAt",
+        "resetInText",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "providerWindowName": {
+          "type": "string"
+        },
+        "usedPercentage": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "resetAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "resetInText": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "$ref": "#/$defs/accountStatus"
+        },
+        "hint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "accountQuotaCard": {
+      "type": "object",
+      "required": [
+        "provider",
+        "email",
+        "displayOrder",
+        "status",
+        "windows",
+        "lastSuccessfulRefreshAt",
+        "lastAttemptedRefreshAt",
+        "stale"
+      ],
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/providerId"
+        },
+        "email": {
+          "type": "string"
+        },
+        "displayOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "status": {
+          "$ref": "#/$defs/accountStatus"
+        },
+        "windows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/quotaWindow"
+          }
+        },
+        "lastSuccessfulRefreshAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "lastAttemptedRefreshAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "stale": {
+          "type": "boolean"
+        },
+        "errorHint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effectivePollIntervalSeconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "selectionRank": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

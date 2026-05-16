@@ -1,0 +1,228 @@
+.aiqm-desklet {
+  padding: 0;
+  color: #f4f4f5;
+  min-width: 288px;
+}
+
+.aiqm-header-card {
+  margin: 0 0 6px 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background-color: rgba(31, 31, 31, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.40);
+  min-width: 288px;
+}
+
+.aiqm-header {
+  min-width: 264px;
+}
+
+.aiqm-header-icon {
+  margin-right: 6px;
+}
+
+.aiqm-title {
+  font-weight: bold;
+  font-size: 98%;
+  color: #f4f4f5;
+}
+
+.aiqm-subtitle {
+  color: #b9b9be;
+  font-size: 72%;
+  padding-top: 2px;
+}
+
+.aiqm-message {
+  color: #c7c7c7;
+  padding: 12px;
+  border-radius: 10px;
+  background-color: rgba(31, 31, 31, 0.94);
+}
+
+.aiqm-setup-button {
+  margin-left: 10px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 82%;
+}
+
+.aiqm-provider-section {
+  margin: 0 0 5px 0;
+  border-radius: 10px;
+  background-color: rgba(31, 31, 31, 0.40);
+  border: 1px solid rgba(255, 255, 255, 0.40);
+  min-width: 288px;
+}
+
+.aiqm-provider-toggle {
+  padding: 8px 12px 4px 12px;
+  border-radius: 10px;
+  background-color: transparent;
+  color: #d1d5db;
+}
+
+.aiqm-provider-toggle-content {
+  min-width: 264px;
+}
+
+.aiqm-provider-accounts {
+  padding: 6px 6px 6px 6px;
+}
+
+.aiqm-provider-icon {
+  margin-right: 5px;
+}
+
+.aiqm-provider-toggle-label {
+  color: #d1d5db;
+  font-size: 82%;
+  font-weight: bold;
+}
+
+.aiqm-provider-toggle-arrow {
+  color: #d1d5db;
+  font-size: 82%;
+  font-weight: bold;
+}
+
+.aiqm-quota-card {
+  margin: 0 0 6px 0;
+  padding: 9px 6px;
+  border-radius: 8px;
+  background-color: rgba(31, 31, 31, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  min-width: 276px;
+}
+
+
+.aiqm-account-header {
+  padding-bottom: 5px;
+}
+
+.aiqm-email {
+  color: #f3f4f6;
+  font-size: 86%;
+  font-weight: bold;
+}
+
+
+.aiqm-count-pill {
+  color: #d1d5db;
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 999px;
+  padding: 1px 7px;
+  margin-left: 6px;
+  font-size: 72%;
+  font-weight: bold;
+}
+
+.aiqm-selection-rank-pill {
+  color: #d1d5db;
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 999px;
+  padding: 1px 7px;
+  margin-left: 5px;
+  font-size: 72%;
+  font-weight: bold;
+}
+
+.aiqm-metric {
+  padding: 2px 0 5px 0;
+}
+
+.aiqm-metric-header {
+  padding-bottom: 3px;
+}
+
+.aiqm-card-title {
+  color: #a8a8ad;
+  font-size: 82%;
+  font-weight: bold;
+}
+
+.aiqm-remaining-inline {
+  color: #f5f5f5;
+  font-size: 86%;
+  font-weight: bold;
+  padding-left: 8px;
+  text-align: right;
+}
+
+.aiqm-progress-track {
+  height: 7px;
+  background-color: transparent;
+}
+
+.aiqm-progress-fill {
+  height: 7px;
+  border-radius: 3px;
+  min-width: 1px;
+}
+
+.aiqm-progress-remainder {
+  height: 7px;
+  border-radius: 3px;
+  background-color: #b9b9be;
+}
+
+.aiqm-progress-fill-ok {
+  background-color: #22c55e;
+}
+
+.aiqm-progress-fill-warning {
+  background-color: #f7c948;
+}
+
+.aiqm-progress-fill-critical {
+  background-color: #ef4444;
+}
+
+.aiqm-progress-fill-unknown {
+  background-color: #9ca3af;
+}
+
+.aiqm-reset-row {
+}
+
+.aiqm-reset {
+  color: #b9b9be;
+  font-size: 74%;
+  padding-top: 3px;
+}
+
+.aiqm-poll-interval {
+  color: #b9b9be;
+  font-size: 74%;
+  padding-top: 3px;
+}
+
+.aiqm-status-fresh {
+  color: #f4f4f5;
+}
+
+.aiqm-status-stale {
+  color: #f7c948;
+}
+
+.aiqm-status-error {
+  color: #ff8a80;
+}
+
+.aiqm-quota-ok,
+.aiqm-quota-warning,
+.aiqm-quota-critical,
+.aiqm-quota-unknown {
+  color: #f5f5f5;
+}
+
+.aiqm-hint {
+  color: #c0c0c0;
+  font-size: 74%;
+  padding-top: 3px;
+}

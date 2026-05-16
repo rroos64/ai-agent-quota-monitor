@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.aiqm/contracts/v1/config.schema.json",
+  "title": "AIQM Config",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "accounts",
+    "settings"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1"
+    },
+    "accounts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "provider",
+          "email",
+          "displayOrder",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "provider": {
+            "enum": [
+              "fake",
+              "codex",
+              "antigravity",
+              "claude-code"
+            ]
+          },
+          "email": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "providerConfig": {
+            "type": "object"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "settings": {
+      "type": "object",
+      "required": [
+        "refreshIntervalMinutes"
+      ],
+      "properties": {
+        "refreshIntervalMinutes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "setupCommand": {
+          "type": "string"
+        },
+        "providerPollIntervalSeconds": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "fake",
+              "codex",
+              "antigravity",
+              "claude-code"
+            ]
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 30
+          }
+        },
+        "providerPollMaxIntervalSeconds": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "fake",
+              "codex",
+              "antigravity",
+              "claude-code"
+            ]
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 30
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
