@@ -22,11 +22,11 @@ The development-flow validation script uses temporary `AIQM_DATA_DIR` and `AIQM_
 - [ ] CLI output does not include `tokenPayload`, `rawMetadata`, or `SECRET_SENTINEL_DO_NOT_LEAK`.
 - [ ] Local AIQM data and imported provider profiles are treated as sensitive and are not committed, logged, or copied into fixtures.
 - [ ] `reset --all` removes helper-managed config/token/latest/history/log files under configured app paths.
-- [ ] Public install docs point to `scripts/aiqm-local.sh` as the local installer.
+- [ ] Public install docs point to the `install.sh` one-liner as the primary install path.
 
 ## Manual desklet smoke
 
-- [ ] Run `scripts/aiqm-local.sh install`.
+- [ ] Run the one-liner installer (`bash <(curl -fsSL .../install.sh)`) or `scripts/aiqm-local.sh install` from a clone.
 - [ ] Reload Cinnamon manually if needed and add **AI Agent Quota Monitor** from Desklets settings.
 - [ ] Run `aiqm setup` and add a Codex account, or use a credential-free fake account for display-only development smoke.
 - [ ] Confirm the desklet renders account data from `latest.json`.
@@ -43,7 +43,18 @@ See [Security Notes](security.md).
 - [ ] Provider-shaped fixtures are redacted.
 - [ ] Local session artifacts are not committed.
 
+## Version bump and tagging
+
+See [Releasing AIQM](releasing.md) for the full version bump guide.
+
+- [ ] `package.json` `version` field updated to the new version.
+- [ ] Version bump committed on its own (`chore: bump version to vX.Y.Z`).
+- [ ] Release tagged: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`.
+- [ ] Branch and tag pushed: `git push origin main && git push origin vX.Y.Z`.
+- [ ] GitHub Release created from the tag with release notes.
+
 ## Related docs
 
+- [Releasing AIQM](releasing.md)
 - [Install and Local Run Guide](install.md)
 - [Security Notes](security.md)

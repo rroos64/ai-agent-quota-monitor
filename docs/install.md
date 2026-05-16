@@ -6,19 +6,41 @@ AIQM installs a local helper CLI, a Cinnamon desklet, a setup terminal launcher,
 
 - Linux desktop; Cinnamon is required for the desklet.
 - Node.js/npm for building the helper.
+- git and curl for the one-liner installer.
 - Codex CLI available to the user. AIQM owns its own Codex login/session data, but current quota transport still launches `codex app-server`.
 - `systemctl --user` for the production background poll timer.
 
 ## Install
 
-From a clone:
+### One-liner (recommended)
 
 ```bash
-npm install
-scripts/aiqm-local.sh install
+bash <(curl -fsSL https://raw.githubusercontent.com/rroos64/ai-agent-quota-monitor/main/install.sh)
 ```
 
 Install and immediately launch setup:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/rroos64/ai-agent-quota-monitor/main/install.sh) --launch-setup
+```
+
+The installer clones the repository to `~/.local/share/ai-agent-quota-monitor/source`, then runs the full install from that checkout. No `sudo` required.
+
+To install a specific release tag:
+
+```bash
+AIQM_REF=v1.0.0 bash <(curl -fsSL https://raw.githubusercontent.com/rroos64/ai-agent-quota-monitor/main/install.sh)
+```
+
+### From a clone
+
+If you have already cloned the repository:
+
+```bash
+scripts/aiqm-local.sh install
+```
+
+Or install and immediately launch setup:
 
 ```bash
 scripts/aiqm-local.sh install --launch-setup

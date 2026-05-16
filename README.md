@@ -10,6 +10,7 @@
 
 <p align="center">
   <a href="https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/rroos64/ai-agent-quota-monitor/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/rroos64/ai-agent-quota-monitor"></a>
   <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg">
   <img alt="Platform: Linux Cinnamon" src="https://img.shields.io/badge/platform-Linux%20Cinnamon-green">
   <img alt="Status: early usable" src="https://img.shields.io/badge/status-early%20usable-orange">
@@ -117,17 +118,19 @@ AIQM is currently designed for local user installation. It should not require `s
 
 ## Quick start
 
-Install AIQM:
+Install AIQM with a single command (requires git, Node.js ≥ 20, and curl):
 
 ```bash
-scripts/aiqm-local.sh install
+bash <(curl -fsSL https://raw.githubusercontent.com/rroos64/ai-agent-quota-monitor/main/install.sh)
 ```
 
-Install and open setup immediately:
+Install and immediately open setup:
 
 ```bash
-scripts/aiqm-local.sh install --launch-setup
+bash <(curl -fsSL https://raw.githubusercontent.com/rroos64/ai-agent-quota-monitor/main/install.sh) --launch-setup
 ```
+
+The installer clones the repository to `~/.local/share/ai-agent-quota-monitor/source`, builds the helper, installs the desklet, and enables the poll timer. No `sudo` required.
 
 Then add your accounts from the setup TUI:
 
@@ -137,7 +140,13 @@ aiqm setup
 
 After setup, add the desklet from Cinnamon's desklet settings if it is not shown automatically.
 
-Reload Cinnamon once after desklet code or style changes if Cinnamon has not reloaded it automatically.
+**From a clone:** if you have already cloned the repository, run `scripts/aiqm-local.sh install` directly.
+
+**Pinned release:** to install a specific version, prefix with `AIQM_REF=vX.Y.Z`:
+
+```bash
+AIQM_REF=v1.0.0 bash <(curl -fsSL https://raw.githubusercontent.com/rroos64/ai-agent-quota-monitor/main/install.sh)
+```
 
 ---
 
@@ -508,7 +517,8 @@ Planned areas:
 
 * Google Antigravity provider support
 * stronger provider diagnostics
-* improved install and update flow
+* install via `curl | bash` one-liner (done — see `install.sh`)
+* improved update flow
 * better stale/error explanations
 * optional privacy mode for screen-sharing
 * potential Cinnamon Spices distribution path

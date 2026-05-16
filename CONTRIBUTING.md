@@ -46,6 +46,7 @@ docs/test-traceability.md
 docs/security.md
 docs/install.md
 docs/release-checklist.md
+docs/releasing.md
 docs/backlog/ideas-to-implement.md
 docs/defects/defects.md
 ```
@@ -139,7 +140,7 @@ Use the smallest relevant document, but do not skip the thinking step.
 | Provider behaviour | TSD, boundary contracts if applicable, fixtures, traceability |
 | State file shape | `docs/boundary-contracts.md`, contracts under `contracts/v1/`, tests |
 | Security-sensitive change | `docs/security.md`, tests, traceability |
-| Install/update change | `docs/install.md`, release checklist if relevant |
+| Install/update change | `docs/install.md`, `docs/release-checklist.md`, `docs/releasing.md` if relevant |
 | Defect fix | `docs/defects/defects.md`, regression test, traceability |
 | Architecture boundary change | architecture document and boundary contracts |
 
