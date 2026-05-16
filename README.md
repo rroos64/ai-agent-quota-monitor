@@ -1,7 +1,5 @@
 # AI Agent Quota Monitor
 
-[![CI](https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/ci.yml)
-
 <p align="center">
   <img src="docs/images/logo.png" alt="AI Agent Quota Monitor logo" width="300">
 </p>
@@ -11,6 +9,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/ci.yml/badge.svg"></a>
   <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg">
   <img alt="Platform: Linux Cinnamon" src="https://img.shields.io/badge/platform-Linux%20Cinnamon-green">
   <img alt="Status: early usable" src="https://img.shields.io/badge/status-early%20usable-orange">
