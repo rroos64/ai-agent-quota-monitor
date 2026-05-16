@@ -497,7 +497,7 @@ export class CodexAuthService {
     try {
       // Use string paths (no withFileTypes) to avoid Dirent.path behaviour differences
       // across Node versions (deprecated/changed in Node 23.2).
-      const relativePaths = await readdir(codexHome, { recursive: true }) as string[];
+      const relativePaths = await readdir(codexHome, { recursive: true });
       const files = await Promise.all(
         relativePaths.map(async (relativePath) => {
           const absolutePath = join(codexHome, relativePath);
