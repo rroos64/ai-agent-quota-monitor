@@ -1,5 +1,7 @@
 # AI Agent Quota Monitor
 
+[![CI](https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/ci.yml)
+
 <p align="center">
   <img src="docs/images/logo.png" alt="AI Agent Quota Monitor logo" width="300">
 </p>
