@@ -59,15 +59,11 @@ git push origin main
 git push origin v1.2.3
 ```
 
-### 5. Create a GitHub Release
+### 5. GitHub Release is created automatically
 
-Go to [Releases](https://github.com/rroos64/ai-agent-quota-monitor/releases) → **Draft a new release** → select the tag.
+Pushing the tag triggers `.github/workflows/release.yml`, which creates the GitHub Release via `softprops/action-gh-release`. No manual web UI step required.
 
-Include in the release body:
-
-- A short description of what changed
-- Any breaking-change migration notes for a `MAJOR` bump
-- A note if any provider integration behaviour changed (especially unofficial endpoints)
+The generated release body includes the pinned install one-liner and a link to the commit log for that tag. If you need to add release notes (breaking changes, provider behaviour changes), edit the release on GitHub after it is created.
 
 ---
 

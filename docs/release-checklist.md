@@ -51,7 +51,8 @@ See [Releasing AIQM](releasing.md) for the full version bump guide.
 - [ ] Version bump committed on its own (`chore: bump version to vX.Y.Z`).
 - [ ] Release tagged: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`.
 - [ ] Branch and tag pushed: `git push origin main && git push origin vX.Y.Z`.
-- [ ] GitHub Release created from the tag with release notes.
+- [ ] GitHub Actions release workflow completed and release is visible on the releases page.
+- [ ] Edit the release on GitHub to add release notes if this is a `MAJOR` bump or includes notable provider changes.
 
 ## Related docs
 
