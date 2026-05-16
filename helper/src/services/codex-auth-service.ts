@@ -1,5 +1,5 @@
 import { mkdir, mkdtemp, readFile, readdir, stat, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname, isAbsolute, join } from 'node:path';
 import { redactSecrets } from '../diagnostics/index.js';
 import type { AuthSession } from '../domain/index.js';
 import { ProviderCommandError } from '../providers/index.js';
@@ -498,11 +498,15 @@ export class CodexAuthService {
       const entries = await readdir(codexHome, { recursive: true, withFileTypes: true });
       const files = await Promise.all(
         entries.map(async (entry) => {
-          const path = entry.path ? join(entry.path, entry.name) : entry.name;
-          const relativePath = path.startsWith(codexHome)
-            ? path.slice(codexHome.length + 1)
+          // Node <20.1: entry.path is the absolute parent directory path
+          // Node >=20.1: entry.path is relative to the readdir root (codexHome)
+          const absolutePath = isAbsolute(entry.path)
+            ? join(entry.path, entry.name)
+            : join(codexHome, entry.path, entry.name);
+          const relativePath = absolutePath.startsWith(codexHome)
+            ? absolutePath.slice(codexHome.length + 1)
             : entry.name;
-          const metadata = await stat(path);
+          const metadata = await stat(absolutePath);
           return {
             path: relativePath,
             type: entry.isDirectory() ? 'directory' : entry.isFile() ? 'file' : 'other',
