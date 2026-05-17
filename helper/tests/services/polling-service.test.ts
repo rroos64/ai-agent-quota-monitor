@@ -8,6 +8,7 @@ import {
   ProviderError,
   type AccountValidationResult,
   type ConfiguredAccount,
+  type ProviderId,
   type ProviderQuotaResult
 } from '../../src/domain/index.js';
 import {
@@ -107,14 +108,14 @@ function delay(ms: number): Promise<void> {
 }
 
 class SlowStubAdapter extends AbstractProviderAdapter {
-  readonly providerId = 'fake';
   readonly providerName = 'Slow Stub';
   readonly events: string[] = [];
 
   constructor(
     private readonly delaysByEmail: Record<string, number>,
     private readonly failuresByEmail: Record<string, Error> = {},
-    clock: Clock = clockAtNow
+    clock: Clock = clockAtNow,
+    readonly providerId: ProviderId = 'fake'
   ) {
     super(clock);
   }
@@ -148,7 +149,7 @@ class SlowStubAdapter extends AbstractProviderAdapter {
     }
 
     return {
-      provider: 'fake',
+      provider: this.providerId,
       accountEmail: account.email,
       fetchedAt: this.clock.nowIso(),
       status: 'fresh',
@@ -625,6 +626,32 @@ describe('PollingService', () => {
       }).pollAll();
 
       expect(summary).toMatchObject({ accountsPolled: 0, skipped: 1, successes: 0 });
+    });
+
+    it('rounds fractional provider back-off intervals up to whole seconds', async () => {
+      const harness = await createHarness(clockAtNow);
+      const claudeAccount: ConfiguredAccount = {
+        id: accountIdFor('claude-code', 'claude@example.com'),
+        provider: 'claude-code',
+        email: 'claude@example.com',
+        displayOrder: 0,
+        createdAt: now,
+        updatedAt: now
+      };
+      await saveConfig(harness, [claudeAccount], { refreshIntervalMinutes: 1 });
+
+      const registry = new ProviderRegistry();
+      registry.register(
+        new SlowStubAdapter({ 'claude@example.com': 0 }, {}, clockAtNow, 'claude-code')
+      );
+      harness.providerRegistry = registry;
+
+      await service(harness, clockAtNow).pollAll();
+      const t1 = '2026-05-09T12:31:00.000Z';
+      await service(harness, { now: () => new Date(t1), nowIso: () => t1 }).pollAll();
+      const latest = await harness.latestStateStore.load();
+
+      expect(latest.accounts[0]?.effectivePollIntervalSeconds).toBe(2101);
     });
 
     it('doubles effectivePollIntervalSeconds on thrown provider error', async () => {

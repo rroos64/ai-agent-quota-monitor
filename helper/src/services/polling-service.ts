@@ -217,7 +217,7 @@ function computeNextPollIntervalSeconds(
 ): number {
   if (outcome === 'changed') return minInterval;
   if (retryAfter !== null) return Math.max(retryAfter, minInterval);
-  return Math.min(Math.max(currentInterval, minInterval) * ratio, maxInterval);
+  return Math.min(Math.ceil(Math.max(currentInterval, minInterval) * ratio), maxInterval);
 }
 
 function withEffectiveInterval(card: AccountQuotaCard, nextInterval: number): AccountQuotaCard {
