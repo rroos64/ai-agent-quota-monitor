@@ -9,18 +9,21 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/ci.yml">
-    <img src="https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/ci.yml/badge.svg" alt="CI status">
-  </a>
-  <a href="https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/release.yml">
-    <img src="https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/release.yml/badge.svg" alt="Release status">
-  </a>
   <a href="https://github.com/rroos64/ai-agent-quota-monitor/releases/latest">
     <img src="https://img.shields.io/github/v/release/rroos64/ai-agent-quota-monitor" alt="Latest release">
   </a>
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
   <img src="https://img.shields.io/badge/platform-Linux%20Cinnamon-green" alt="Platform: Linux Cinnamon">
   <img src="https://img.shields.io/badge/status-early%20usable-orange" alt="Status: early usable">
+</p>
+
+<p align="center">
+  <a href="https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/ci.yml">
+    <img src="https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/ci.yml/badge.svg" alt="CI status">
+  </a>
+  <a href="https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/release.yml">
+    <img src="https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/release.yml/badge.svg" alt="Release status">
+  </a>
 </p>
 
 AIQM is a local Linux/Cinnamon quota monitor for developers who use multiple AI coding-agent accounts.
@@ -255,6 +258,8 @@ Cooldowns are applied **per account**, not per provider. This matters because qu
 
 AIQM keeps the last known account state visible while an account is cooling down or not actively changing. That prevents the desklet from hiding useful information just because a provider account is idle or temporarily failing.
 
+Each account card also carries the next backend poll eligibility time. In the expanded desklet view the bottom-right label shows it as a countdown plus the current effective interval, for example `↻ 12m left / 30m`. That is the next real account poll the helper will allow; the systemd timer may wake earlier and skip the account.
+
 The desklet watches `latest.json` and re-renders when it changes. The desklet also has a legacy poll command setting, but the background timer is the reliable production refresh path.
 
 ### Provider-level boundaries
@@ -283,6 +288,8 @@ Each account starts at its provider minimum. When its quota data is unchanged or
 This means two accounts from the same provider can have different effective intervals at the same time: one that is actively changing quota will poll eagerly, while one that is idle backs off on its own.
 
 AIQM keeps the last known state visible for any account that is cooling down, failing, or temporarily unavailable. The desklet never hides an account just because its poll is deferred.
+
+The helper stores `nextPollEligibleAt` next to `effectivePollIntervalSeconds` in `latest.json`, so the desklet can show when that account is genuinely eligible for another provider poll.
 
 If a provider returns a `retry-after` header, AIQM honours that value for the affected account even when it exceeds the configured maximum.
 

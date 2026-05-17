@@ -151,7 +151,10 @@ var RenderModel = (function () {
       statusClass: statusClass(status),
       selectionRank: asNumber(account.selectionRank, null),
       selectionRankUncertain: account.stale === true && typeof account.selectionRank === 'number',
-      pollIntervalText: formatPollInterval(account.effectivePollIntervalSeconds)
+      pollIntervalText: formatPollTiming(
+        account.nextPollEligibleAt,
+        account.effectivePollIntervalSeconds
+      )
     };
   }
 
@@ -184,13 +187,29 @@ var RenderModel = (function () {
     });
   }
 
-  function formatPollInterval(seconds) {
+  function formatDuration(seconds) {
     if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds <= 0) return null;
-    var s = Math.round(seconds);
-    if (s < 60) return '↻ ' + s + 's';
-    var m = Math.round(s / 60);
-    if (m < 60) return '↻ ' + m + 'm';
-    return '↻ ' + Math.round(m / 60) + 'h';
+    var s = Math.max(1, Math.round(seconds));
+    if (s < 60) return s + 's';
+    var m = Math.ceil(s / 60);
+    if (m < 60) return m + 'm';
+    var h = Math.floor(m / 60);
+    var remainderMinutes = m % 60;
+    if (h < 24) return remainderMinutes > 0 ? h + 'h ' + remainderMinutes + 'm' : h + 'h';
+    var d = Math.floor(h / 24);
+    var remainderHours = h % 24;
+    return remainderHours > 0 ? d + 'd ' + remainderHours + 'h' : d + 'd';
+  }
+
+  function formatPollTiming(nextPollEligibleAt, intervalSeconds) {
+    var intervalText = formatDuration(intervalSeconds);
+    if (!intervalText) return null;
+    if (typeof nextPollEligibleAt !== 'string') return null;
+    var eligibleMillis = Date.parse(nextPollEligibleAt);
+    if (Number.isNaN(eligibleMillis)) return null;
+    var secondsLeft = Math.ceil((eligibleMillis - Date.now()) / 1000);
+    var countdownText = secondsLeft <= 0 ? 'due' : formatDuration(secondsLeft) + ' left';
+    return '↻ ' + countdownText + ' / ' + intervalText;
   }
 
   function buildProviderSummary(group) {

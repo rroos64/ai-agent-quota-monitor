@@ -32,6 +32,7 @@ export const accountQuotaCardSchema = z
     stale: z.boolean(),
     errorHint: z.string().nullable().optional(),
     effectivePollIntervalSeconds: z.number().int().min(1).optional(),
+    nextPollEligibleAt: nullableIsoDateTimeSchema.optional(),
     selectionRank: z.number().int().min(1).nullable().optional()
   })
   .strict();

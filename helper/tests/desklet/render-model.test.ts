@@ -1,7 +1,7 @@
 // Provenance: docs/test-traceability.md — Desklet model area
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 type RenderModelApi = {
   DEFAULT_POLL_COMMAND: string;
@@ -35,6 +35,7 @@ type RenderModelApi = {
         errorHint: string | null;
         selectionRank: number | null;
         selectionRankUncertain: boolean;
+        pollIntervalText: string | null;
         windows: {
           id: string;
           usedPercentage: number | null;
@@ -58,7 +59,7 @@ const renderModel = require(
   resolve(import.meta.dirname, '../../../desklet/renderModel.js')
 ) as RenderModelApi;
 
-// Traceability: BR: passive Cinnamon desklet display and BR-042 recommended account order; AC: missing/malformed/empty/grouped quota rendering plus selectionRank passthrough from latest.json; TS: TSD desklet boundary, latest.json rendering, and selection-rank render model. NBS scoring covered by helper/tests/services/nbs.test.ts.
+// Traceability: BR: passive Cinnamon desklet display, BR-042 recommended account order, and BR-044 per-account poll back-off visibility; AC: missing/malformed/empty/grouped quota rendering, selectionRank passthrough from latest.json, and backend poll countdown display; TS: TSD desklet boundary, latest.json rendering, selection-rank render model, and progressive back-off addendum. NBS scoring covered by helper/tests/services/nbs.test.ts.
 describe('desklet render model', () => {
   it('provides default desklet poll/setup configuration safely', () => {
     expect(renderModel.DEFAULT_POLL_COMMAND).toBe('aiqm poll --json');
@@ -293,6 +294,115 @@ describe('desklet render model', () => {
     expect(
       accounts.find((a) => a.email === 'stale-unranked@example.com')?.selectionRankUncertain
     ).toBe(false);
+  });
+
+  // Traceability: BR-044 per-account progressive back-off visibility; AC: desklet renders nextPollEligibleAt as a countdown plus effective interval, marks due/overdue accounts, and hides malformed timing data; TS: TSD Current Implementation Addendum — Progressive back-off algorithm and Desklet sections.
+  it('formats backend poll countdown plus effective interval on account render objects', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-09T12:00:00.000Z'));
+    try {
+      const model = renderModel.buildRenderModel({
+        schemaVersion: '1',
+        generatedAt: '2026-05-09T12:00:00.000Z',
+        accounts: [
+          {
+            provider: 'codex',
+            email: 'soon@example.com',
+            displayOrder: 0,
+            status: 'fresh',
+            stale: false,
+            effectivePollIntervalSeconds: 1800,
+            nextPollEligibleAt: '2026-05-09T12:12:00.000Z',
+            windows: []
+          },
+          {
+            provider: 'codex',
+            email: 'long@example.com',
+            displayOrder: 1,
+            status: 'fresh',
+            stale: false,
+            effectivePollIntervalSeconds: 9000,
+            nextPollEligibleAt: '2026-05-09T14:05:00.000Z',
+            windows: []
+          }
+        ]
+      });
+
+      const accounts = model.groups.find((g) => g.provider === 'codex')?.accounts ?? [];
+      expect(accounts.map((a) => [a.email, a.pollIntervalText])).toEqual([
+        ['soon@example.com', '↻ 12m left / 30m'],
+        ['long@example.com', '↻ 2h 5m left / 2h 30m']
+      ]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('shows backend poll timing as due when the account is eligible now or overdue', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-09T12:00:00.000Z'));
+    try {
+      const model = renderModel.buildRenderModel({
+        schemaVersion: '1',
+        generatedAt: '2026-05-09T12:00:00.000Z',
+        accounts: [
+          {
+            provider: 'codex',
+            email: 'due@example.com',
+            displayOrder: 0,
+            status: 'fresh',
+            stale: false,
+            effectivePollIntervalSeconds: 60,
+            nextPollEligibleAt: '2026-05-09T11:59:00.000Z',
+            windows: []
+          }
+        ]
+      });
+
+      expect(model.groups[0]?.accounts[0]?.pollIntervalText).toBe('↻ due / 1m');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('hides backend poll timing when timestamp or interval data is missing or malformed', () => {
+    const model = renderModel.buildRenderModel({
+      schemaVersion: '1',
+      generatedAt: '2026-05-09T12:00:00.000Z',
+      accounts: [
+        {
+          provider: 'codex',
+          email: 'missing-date@example.com',
+          displayOrder: 0,
+          status: 'fresh',
+          stale: false,
+          effectivePollIntervalSeconds: 60,
+          windows: []
+        },
+        {
+          provider: 'codex',
+          email: 'bad-date@example.com',
+          displayOrder: 1,
+          status: 'fresh',
+          stale: false,
+          effectivePollIntervalSeconds: 60,
+          nextPollEligibleAt: 'not-a-date',
+          windows: []
+        },
+        {
+          provider: 'codex',
+          email: 'missing-interval@example.com',
+          displayOrder: 2,
+          status: 'fresh',
+          stale: false,
+          nextPollEligibleAt: '2026-05-09T12:01:00.000Z',
+          windows: []
+        }
+      ]
+    });
+
+    const accounts = model.groups.find((g) => g.provider === 'codex')?.accounts ?? [];
+    expect(accounts.map((a) => a.pollIntervalText)).toEqual([null, null, null]);
   });
 
   it('builds remaining progress text for quota windows', () => {

@@ -63,6 +63,7 @@ async function createCodexHome(root: string) {
   return codexHome;
 }
 
+// Traceability: BR: Codex account setup must isolate imported provider profiles and avoid secret leakage; AC: imported Codex homes are copied into AIQM-owned private storage, symlink sources are rejected, existing temporary homes migrate safely, and returned/logged data excludes source paths and token sentinels; TS: Codex profile import and provider profile storage boundary.
 describe('Codex profile import', () => {
   it('copies --codex-home into persistent provider storage and configures the account with that path', async () => {
     const { root, services } = await tempServices();

@@ -433,6 +433,7 @@ describe('PollingService', () => {
       status: 'fresh',
       stale: false,
       lastAttemptedRefreshAt: now,
+      nextPollEligibleAt: '2026-05-09T12:10:00.000Z',
       windows: [{ id: 'weekly', usedPercentage: 42 }]
     });
     expect(await readHistoryLines(harness.historyLogFile)).toHaveLength(1);
@@ -524,7 +525,7 @@ describe('PollingService', () => {
     expect(await readHistoryLines(harness.historyLogFile)).toHaveLength(1);
   });
 
-  // Traceability: BR-044 progressive back-off; unchanged successful accounts and errors back off.
+  // Traceability: BR-044 progressive back-off; unchanged successful accounts and errors back off, and latest.json carries nextPollEligibleAt for desklet-visible next real poll timing.
   describe('progressive back-off', () => {
     const minSeconds = 60;
     const maxSeconds = 900;
@@ -568,16 +569,35 @@ describe('PollingService', () => {
       ]);
     });
 
+    it('writes the next poll eligibility timestamp from the effective interval', async () => {
+      const harness = await createHarness(clockAtNow);
+      await saveConfig(harness, [account('success')], backOffSettings);
+
+      await service(harness, clockAtNow).pollAll();
+      const latest = await harness.latestStateStore.load();
+
+      expect(latest.accounts[0]).toMatchObject({
+        effectivePollIntervalSeconds: minSeconds,
+        nextPollEligibleAt: '2026-05-09T12:01:00.000Z'
+      });
+    });
+
     it('doubles effectivePollIntervalSeconds when successful quota data is unchanged', async () => {
       const harness = await createHarness(clockAtNow);
       await saveConfig(harness, [account('success')], backOffSettings);
 
       await service(harness, clockAtNow).pollAll();
       const t1 = '2026-05-09T12:02:00.000Z';
-      await service(harness, { now: () => new Date(t1), nowIso: () => t1 }).pollAll();
+      const t1Clock = { now: () => new Date(t1), nowIso: () => t1 };
+      const registry = new ProviderRegistry();
+      registry.register(new FakeProviderAdapter(t1Clock));
+      harness.providerRegistry = registry;
+
+      await service(harness, t1Clock).pollAll();
       const latest = await harness.latestStateStore.load();
 
       expect(latest.accounts[0]?.effectivePollIntervalSeconds).toBe(minSeconds * 2);
+      expect(latest.accounts[0]?.nextPollEligibleAt).toBe('2026-05-09T12:04:00.000Z');
       expect(await readHistoryLines(harness.historyLogFile)).toHaveLength(2);
     });
 
@@ -673,6 +693,7 @@ describe('PollingService', () => {
       const latest = await harness.latestStateStore.load();
 
       expect(latest.accounts[0]?.effectivePollIntervalSeconds).toBe(minSeconds * 2);
+      expect(latest.accounts[0]?.nextPollEligibleAt).toBe('2026-05-09T12:04:00.000Z');
     });
 
     it('uses retry-after seconds from provider command errors for the next poll interval', async () => {
@@ -708,6 +729,7 @@ describe('PollingService', () => {
       const latest = await harness.latestStateStore.load();
 
       expect(latest.accounts[0]?.effectivePollIntervalSeconds).toBe(1646);
+      expect(latest.accounts[0]?.nextPollEligibleAt).toBe('2026-05-09T12:29:26.000Z');
     });
 
     it('uses not-before timestamp from provider command errors for the next poll interval', async () => {
@@ -744,6 +766,7 @@ describe('PollingService', () => {
       const latest = await harness.latestStateStore.load();
 
       expect(latest.accounts[0]?.effectivePollIntervalSeconds).toBe(1802);
+      expect(latest.accounts[0]?.nextPollEligibleAt).toBe('2026-05-09T12:32:02.000Z');
     });
 
     it('honors not-before timestamps even when they exceed the configured max interval', async () => {

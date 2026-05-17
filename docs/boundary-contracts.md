@@ -64,7 +64,7 @@ Setup actions:
 Contracts are under `contracts/v1/` and mirrored by Zod schemas.
 
 - `config.schema.json`: configured accounts and helper settings; `refreshIntervalMinutes` is positive integer; optional `settings.providerPollIntervalSeconds` sets provider default minimum poll intervals; optional `settings.providerPollMaxIntervalSeconds` sets provider default maximum progressive back-off intervals. An individual account may override those defaults in `providerConfig` with `pollIntervalSeconds`/`minPollIntervalSeconds` and `pollMaxIntervalSeconds`/`maxPollIntervalSeconds`.
-- `latest-state.schema.json`: display-safe desklet contract. Each `accountQuotaCard` carries optional `effectivePollIntervalSeconds` (positive integer) — the current back-off interval the polling service will observe before re-polling that account. It is not in the required array; absence is treated as the configured provider minimum.
+- `latest-state.schema.json`: display-safe desklet contract. Each `accountQuotaCard` carries optional `effectivePollIntervalSeconds` (positive integer) and optional `nextPollEligibleAt` (ISO date-time or null). Together they tell the desklet the current back-off interval and the next real backend poll time for that account. They are not in the required array; absence is treated as unknown display timing, with the helper falling back to configured polling defaults internally.
 - `history-entry.schema.json`: display-safe append-only quota history rows.
 - `token-record.schema.json`: token store contract for providers that use token references.
 

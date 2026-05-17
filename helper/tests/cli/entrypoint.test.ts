@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { isCliEntrypoint } from '../../src/cli/index.js';
 
+// Traceability: BR: helper CLI must run correctly from user-local links; AC: symlinked aiqm invocation is treated as the real CLI entrypoint while unrelated scripts are ignored; TS: CLI entrypoint/linking boundary used by local install.
 describe('CLI entrypoint detection', () => {
   it('treats symlink invocation as the CLI entrypoint', async () => {
     const root = await mkdtemp(join(tmpdir(), 'aiqm-cli-entrypoint-'));

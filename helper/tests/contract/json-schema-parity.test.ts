@@ -59,7 +59,9 @@ const fixtures = {
         lastSuccessfulRefreshAt: now,
         lastAttemptedRefreshAt: offsetNow,
         stale: false,
-        errorHint: null
+        errorHint: null,
+        effectivePollIntervalSeconds: 60,
+        nextPollEligibleAt: '2026-05-09T14:01:00.000Z'
       }
     ]
   },
@@ -94,7 +96,7 @@ async function loadJsonSchema(fileName: string): Promise<unknown> {
   return JSON.parse(await readFile(resolve(contractsDir, fileName), 'utf8')) as unknown;
 }
 
-// Traceability: BR: desklet/helper contract compatibility; AC: JSON Schema and Zod accept representative v1 fixtures; TS: contracts/v1 parity.
+// Traceability: BR: desklet/helper contract compatibility; AC: JSON Schema and Zod accept representative v1 fixtures, including nextPollEligibleAt display-safe poll timing; TS: contracts/v1 parity and TSD latest-state contract.
 describe('JSON Schema and Zod contract parity', () => {
   it.each([
     ['config.schema.json', fixtures.config, appConfigSchema],

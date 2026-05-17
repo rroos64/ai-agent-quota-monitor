@@ -1482,7 +1482,7 @@ The service executes `~/.local/bin/aiqm poll --json`. The timer defaults to 60 s
 
 ### Progressive back-off algorithm
 
-Each `AccountQuotaCard` in `latest.json` carries optional `effectivePollIntervalSeconds` — the interval the polling service will honour before re-polling that account. On each run:
+Each `AccountQuotaCard` in `latest.json` carries optional `effectivePollIntervalSeconds` — the interval the polling service will honour before re-polling that account. It also carries optional `nextPollEligibleAt`, the computed time at which that account becomes eligible for the next real backend poll. On each run:
 
 1. Read `effectivePollIntervalSeconds` from the previous card (fall back to account `providerConfig.pollIntervalSeconds` / `minPollIntervalSeconds`, then provider `settings.providerPollIntervalSeconds`, if absent).
 2. Skip the account if `now - lastAttemptedRefreshAt < effectivePollIntervalSeconds`.
@@ -1492,6 +1492,8 @@ Each `AccountQuotaCard` in `latest.json` carries optional `effectivePollInterval
    - **Error or non-fresh status**: multiply the current interval by the provider's backoff ratio, capped at that account's max, unless the provider returned `not-before` or `retry-after`; provider wait instructions are honoured even when they are larger than the configured max. `not-before` takes precedence over `retry-after`.
 
 Poll boundaries are set at provider level in `helper/src/providers/poll-defaults.ts` but tracked independently per account. Two accounts from the same provider can have different effective intervals at the same time. Defaults: Codex min 60 s / max 1800 s / ratio 2.0; Claude Code min 1800 s / max 7200 s / ratio 1.167. The timer fires every 60 seconds; accounts inside their effective interval are skipped and their previous card is preserved in `latest.json`.
+
+`nextPollEligibleAt` is derived from `lastAttemptedRefreshAt + effectivePollIntervalSeconds`. The desklet may display it as a local countdown but must not use it to drive provider polling.
 
 ## Codex transport
 
@@ -1519,6 +1521,7 @@ The desklet renders:
 - one compact translucent account tile per account
 - provider pill per tile
 - both Codex windows inside each tile
+- reset timing and backend poll timing in the bottom row of each expanded account tile, with poll timing shown as `↻ time left / interval`
 - muted progress track with exact pixel-locked fill width
 
 The desklet remains Node-free and reads only `latest.json`.

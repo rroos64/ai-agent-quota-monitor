@@ -152,6 +152,13 @@
           "type": "integer",
           "minimum": 1
         },
+        "nextPollEligibleAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
         "selectionRank": {
           "type": [
             "integer",

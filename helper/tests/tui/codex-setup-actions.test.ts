@@ -68,6 +68,7 @@ function deps(fetchQuota = vi.fn((account: ConfiguredAccount) => Promise.resolve
   };
 }
 
+// Traceability: BR: Codex setup must verify completed login, import persistent profiles, validate readable quota, reject duplicates, and avoid leaking tokens; AC: TUI action stores only AIQM-owned codexHome paths, leaves incomplete/unreadable accounts unsaved, and redacts token sentinels from result/log output; TS: Codex setup action and provider profile storage boundary.
 describe('Codex setup TUI action', () => {
   it('verifies login, imports persistent profile, saves account, tests quota, and does not leak tokens', async () => {
     const { services, codexHome, checkStatus } = await makeServices();

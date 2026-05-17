@@ -127,11 +127,14 @@ Polling-service tests cover BR-044 by verifying:
 
 - Account-specific poll interval overrides are applied independently from provider defaults.
 - `effectivePollIntervalSeconds` doubles when successful quota data is unchanged.
+- `nextPollEligibleAt` is written from `lastAttemptedRefreshAt + effectivePollIntervalSeconds` and preserved for skipped accounts.
 - Reset-time (`resetAt`) drift alone does not count as quota data change.
 - Fresh unchanged accounts use their effective interval for skip decisions, not only the config min.
 - A thrown provider error doubles the interval.
 - Error/non-fresh accounts use their stored effective interval for skip decisions and cap normal doubling at the configured max.
 - Provider `not-before` and `retry-after` values become the next effective interval even when larger than the configured max.
+
+Desklet render-model tests cover the backend poll label, including future countdowns, due/overdue accounts, long hour/minute formatting, and missing or malformed timing fields.
 
 ## Claude Code provider traceability
 

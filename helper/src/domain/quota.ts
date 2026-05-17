@@ -22,6 +22,7 @@ export type AccountQuotaCard = {
   stale: boolean;
   errorHint?: string | null;
   effectivePollIntervalSeconds?: number;
+  nextPollEligibleAt?: string | null;
   selectionRank?: number | null;
 };
 

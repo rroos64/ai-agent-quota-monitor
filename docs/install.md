@@ -140,6 +140,8 @@ Default timer interval: 60 seconds. The helper applies per-provider minimum inte
 
 Fresh accounts reset to their provider minimum when quota percentages, window status, or the set of windows changes. Reset timestamp drift alone is ignored, because some providers report rolling reset timestamps that move on every fetch. Accounts whose quota data remains unchanged, or whose polling returns an error/non-fresh status, double their effective interval up to the configured max. If a provider returns `not-before` or `retry-after`, AIQM honours that value even when it is larger than the configured max. `not-before` takes precedence. The minimum accepted value for either setting is 30 seconds. The timer can wake every 60 seconds; accounts still inside their effective interval are skipped and their previous `latest.json` card is preserved.
 
+Each account card in `latest.json` includes `nextPollEligibleAt` when AIQM knows the next real backend poll time. The desklet shows this in the bottom-right of expanded account cards as a countdown plus interval, for example `↻ 12m left / 30m`. If the account is already eligible, the label reads `↻ due / 30m`.
+
 The installer ensures the min and max defaults exist in `~/.local/share/ai-agent-quota-monitor/config.json` under `settings.providerPollIntervalSeconds` and `settings.providerPollMaxIntervalSeconds` without overwriting custom values. Individual accounts can override the provider defaults in their account `providerConfig` with `pollIntervalSeconds`/`minPollIntervalSeconds` and `pollMaxIntervalSeconds`/`maxPollIntervalSeconds`.
 
 Check timer state:

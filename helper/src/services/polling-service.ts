@@ -222,7 +222,17 @@ function computeNextPollIntervalSeconds(
 
 function withEffectiveInterval(card: AccountQuotaCard, nextInterval: number): AccountQuotaCard {
   if (nextInterval <= 0) return card;
-  return { ...card, effectivePollIntervalSeconds: nextInterval };
+  const lastAttemptedMillis = card.lastAttemptedRefreshAt
+    ? Date.parse(card.lastAttemptedRefreshAt)
+    : Number.NaN;
+  const nextPollEligibleAt = Number.isNaN(lastAttemptedMillis)
+    ? null
+    : new Date(lastAttemptedMillis + nextInterval * 1000).toISOString();
+  return {
+    ...card,
+    effectivePollIntervalSeconds: nextInterval,
+    nextPollEligibleAt
+  };
 }
 
 function shouldSkipAccountPoll(
