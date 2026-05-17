@@ -12,6 +12,9 @@
   <a href="https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/ci.yml">
     <img src="https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/ci.yml/badge.svg" alt="CI status">
   </a>
+  <a href="https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/release.yml">
+    <img src="https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/release.yml/badge.svg" alt="Release status">
+  </a>
   <a href="https://github.com/rroos64/ai-agent-quota-monitor/releases/latest">
     <img src="https://img.shields.io/github/v/release/rroos64/ai-agent-quota-monitor" alt="Latest release">
   </a>
