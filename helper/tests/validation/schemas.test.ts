@@ -29,7 +29,7 @@ describe('runtime validation schemas', () => {
       settings: {
         refreshIntervalMinutes: 5,
         setupCommand: 'aiqm setup',
-        providerPollIntervalSeconds: { codex: 60, 'claude-code': 600 }
+        providerPollIntervalSeconds: { codex: 60, 'claude-code': 1800 }
       }
     };
 

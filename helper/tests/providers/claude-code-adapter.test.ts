@@ -1,11 +1,15 @@
 // Provenance: docs/test-traceability.md — Providers area
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { describe, expect, it, vi } from 'vitest';
 import type { ConfiguredAccount } from '../../src/domain/index.js';
 import {
   ClaudeCodeProviderAdapter,
+  ClaudeCodeOAuthUsageTransport,
   ConfigError,
+  ProviderCommandError,
   ProviderSpikeRequiredError,
   ProviderUnavailableError,
   StubClaudeCodeAuthStatusTransport,
@@ -126,5 +130,46 @@ describe('Claude Code adapter boundary', () => {
   it('fails safely when Claude OAuth credentials are unavailable', async () => {
     const adapter = new ClaudeCodeProviderAdapter(undefined, clock);
     await expect(adapter.fetchQuota(account)).rejects.toBeInstanceOf(ProviderUnavailableError);
+  });
+
+  it('surfaces Anthropic not-before and retry-after headers on OAuth usage rate limits', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'aiqm-claude-oauth-'));
+    const claudeConfigDir = join(root, 'claude-config');
+    await mkdir(claudeConfigDir, { recursive: true });
+    await writeFile(
+      join(claudeConfigDir, '.credentials.json'),
+      JSON.stringify({ claudeAiOauth: { accessToken: 'redacted-test-token' } })
+    );
+
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(
+        new Response(JSON.stringify({ error: { type: 'rate_limit_error' } }), {
+          status: 429,
+          headers: {
+            'not-before': '2026-05-09T15:02:00.000Z',
+            'retry-after': '99',
+            'content-type': 'application/json'
+          }
+        })
+      );
+
+    try {
+      const transport = new ClaudeCodeOAuthUsageTransport();
+      await expect(transport.readQuota(claudeConfigDir)).rejects.toMatchObject({
+        name: 'ProviderCommandError',
+        result: {
+          command: 'https://api.anthropic.com/api/oauth/usage',
+          exitCode: 429,
+          stderr: 'not-before: 2026-05-09T15:02:00.000Z\nretry-after: 99'
+        }
+      } satisfies Partial<ProviderCommandError>);
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://api.anthropic.com/api/oauth/usage',
+        expect.objectContaining({ method: 'GET' })
+      );
+    } finally {
+      fetchMock.mockRestore();
+    }
   });
 });

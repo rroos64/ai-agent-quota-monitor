@@ -167,8 +167,8 @@ ensure_config_defaults() {
   AIQM_CONFIG_FILE="$DATA_DIR/config.json" node <<'NODE'
 const fs = require('node:fs');
 const path = process.env.AIQM_CONFIG_FILE;
-const minDefaults = { codex: 60, 'claude-code': 600 };
-const maxDefaults = { codex: 900, 'claude-code': 900 };
+const minDefaults = { codex: 60, 'claude-code': 1800 };
+const maxDefaults = { codex: 1800, 'claude-code': 7200 };
 let config = { schemaVersion: '1', accounts: [], settings: { refreshIntervalMinutes: 5 } };
 if (fs.existsSync(path)) {
   config = JSON.parse(fs.readFileSync(path, 'utf8'));

@@ -580,14 +580,13 @@ describe('PollingService', () => {
       expect(await readHistoryLines(harness.historyLogFile)).toHaveLength(2);
     });
 
-    it('resets effectivePollIntervalSeconds to min when quota reset time changes', async () => {
+    it('backs off when only quota reset time drifts', async () => {
       // First poll establishes a backed-off interval (unchanged data → double).
       const harness = await createHarness(clockAtNow);
       await saveConfig(harness, [account('success')], backOffSettings);
       await service(harness, clockAtNow).pollAll();
-      // Second poll: same provider, same usedPercentage, only resetAt changes.
-      // Uses FakeProviderAdapter (same as first poll) to keep window id and usedPercentage identical,
-      // then patches only resetAt so hasQuotaDataChanged fires exclusively on that field.
+      // Some providers report rolling reset timestamps. Treating resetAt-only drift as a
+      // data change keeps effective intervals pinned at the minimum.
       const adapter = new FakeProviderAdapter(clockAtNow);
       const originalFetch = adapter.fetchQuota.bind(adapter);
       adapter.fetchQuota = async (acc) => {
@@ -605,7 +604,7 @@ describe('PollingService', () => {
       await service(harness, { now: () => new Date(t1), nowIso: () => t1 }).pollAll();
       const latest = await harness.latestStateStore.load();
 
-      expect(latest.accounts[0]?.effectivePollIntervalSeconds).toBe(minSeconds);
+      expect(latest.accounts[0]?.effectivePollIntervalSeconds).toBe(minSeconds * 2);
       expect(await readHistoryLines(harness.historyLogFile)).toHaveLength(2);
     });
 
@@ -718,6 +717,39 @@ describe('PollingService', () => {
       const latest = await harness.latestStateStore.load();
 
       expect(latest.accounts[0]?.effectivePollIntervalSeconds).toBe(1802);
+    });
+
+    it('honors not-before timestamps even when they exceed the configured max interval', async () => {
+      const harness = await createHarness(clockAtNow);
+      await saveConfig(harness, [account('success')], backOffSettings);
+      await service(harness, clockAtNow).pollAll();
+
+      const t1 = '2026-05-09T12:02:00.000Z';
+      const notBefore = '2026-05-09T15:02:00.000Z'; // 10800s after t1, +2s buffer = 10802
+      const adapter = new SlowStubAdapter(
+        { 'dev@example.com': 0 },
+        {
+          'dev@example.com': new ProviderCommandError('Claude OAuth usage request failed: 429', {
+            command: 'https://api.anthropic.com/api/oauth/usage',
+            args: [],
+            exitCode: 429,
+            signal: null,
+            stdout: JSON.stringify({ error: { type: 'rate_limit_error' } }),
+            stderr: `not-before: ${notBefore}`,
+            timedOut: false,
+            durationMs: 10
+          })
+        },
+        clockAtNow
+      );
+      const registry = new ProviderRegistry();
+      registry.register(adapter);
+      harness.providerRegistry = registry;
+
+      await service(harness, { now: () => new Date(t1), nowIso: () => t1 }).pollAll();
+      const latest = await harness.latestStateStore.load();
+
+      expect(latest.accounts[0]?.effectivePollIntervalSeconds).toBe(10802);
     });
 
     it('prefers not-before over retry-after when both are present', async () => {

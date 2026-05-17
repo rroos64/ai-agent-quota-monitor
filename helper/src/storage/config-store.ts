@@ -21,11 +21,11 @@ export const defaultAppConfig: AppConfigContract = {
     refreshIntervalMinutes: 5,
     providerPollIntervalSeconds: {
       codex: 60,
-      'claude-code': 600
+      'claude-code': 1800
     },
     providerPollMaxIntervalSeconds: {
-      codex: 900,
-      'claude-code': 900
+      codex: 1800,
+      'claude-code': 7200
     }
   }
 };

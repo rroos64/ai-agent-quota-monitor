@@ -1048,7 +1048,7 @@ The polling service must apply a per-account progressive back-off strategy to av
 
 **BR-044-AC-001: Reset to min on data change**
 
-Given an account's quota usage, reset time, or window status changes between two polls  
+Given an account's quota usage, window status, or set of windows changes between two polls  
 When the polling service processes the fresh result  
 Then the effective poll interval for that account is reset to the configured minimum
 
@@ -1080,7 +1080,7 @@ Then that account is skipped for this poll run
 
 Given provider-level min interval, max interval, and backoff ratio are defined in the codebase, and optional account-level interval overrides are set in config  
 When the polling service runs  
-Then each account uses its provider's floor, ceiling, and ratio for normal back-off, while provider `retry-after` values are honoured even above the configured ceiling
+Then each account uses its provider's floor, ceiling, and ratio for normal back-off, while provider `not-before` and `retry-after` values are honoured even above the configured ceiling
 
 ---
 

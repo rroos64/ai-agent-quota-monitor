@@ -202,7 +202,6 @@ function hasQuotaDataChanged(newWindows: QuotaWindow[], previousWindows: QuotaWi
     const previous = previousById.get(window.id);
     if (!previous) return true;
     if (previous.usedPercentage !== window.usedPercentage) return true;
-    if (previous.resetAt !== window.resetAt) return true;
     if (previous.status !== window.status) return true;
   }
   return false;

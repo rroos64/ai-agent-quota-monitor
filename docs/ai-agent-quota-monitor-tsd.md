@@ -705,7 +705,7 @@ Rules:
 2. Provider and email combination must be unique.
 3. `refreshIntervalMinutes` is a positive integer retained for configuration compatibility.
 4. `providerPollIntervalSeconds` is optional and overrides the minimum per-provider poll interval. Codebase defaults (Codex 60 s, Claude Code 1800 s) are defined in `helper/src/providers/poll-defaults.ts`.
-5. `providerPollMaxIntervalSeconds` is optional and overrides the maximum per-provider poll interval. Codebase defaults (Codex 1800 s, Claude Code 3600 s) are defined in `poll-defaults.ts`. The backoff ratio (Codex 2.0, Claude Code 1.167) is only configurable in `poll-defaults.ts`.
+5. `providerPollMaxIntervalSeconds` is optional and overrides the maximum per-provider poll interval. Codebase defaults (Codex 1800 s, Claude Code 7200 s) are defined in `poll-defaults.ts`. The backoff ratio (Codex 2.0, Claude Code 1.167) is only configurable in `poll-defaults.ts`.
 6. Config must be validated before use.
 
 ## 9.3 Token Store
@@ -1487,11 +1487,11 @@ Each `AccountQuotaCard` in `latest.json` carries optional `effectivePollInterval
 1. Read `effectivePollIntervalSeconds` from the previous card (fall back to account `providerConfig.pollIntervalSeconds` / `minPollIntervalSeconds`, then provider `settings.providerPollIntervalSeconds`, if absent).
 2. Skip the account if `now - lastAttemptedRefreshAt < effectivePollIntervalSeconds`.
 3. After a poll attempt, compute the next interval:
-   - **Success with data change** (`usedPercentage`, `resetAt`, or window status differs for any window): reset to that account's min.
+   - **Success with data change** (`usedPercentage`, window status, or window set differs): reset to that account's min. `resetAt` drift alone is ignored because some providers report rolling reset timestamps that move on every fetch.
    - **Success with no data change**: multiply the current interval by the provider's backoff ratio, capped at that account's max (`providerConfig.pollMaxIntervalSeconds` / `maxPollIntervalSeconds`, then provider `settings.providerPollMaxIntervalSeconds`, then `poll-defaults.ts`).
-   - **Error or non-fresh status**: multiply the current interval by the provider's backoff ratio, capped at that account's max, unless the provider returned `retry-after`; provider `retry-after` is honoured even when it is larger than the configured max.
+   - **Error or non-fresh status**: multiply the current interval by the provider's backoff ratio, capped at that account's max, unless the provider returned `not-before` or `retry-after`; provider wait instructions are honoured even when they are larger than the configured max. `not-before` takes precedence over `retry-after`.
 
-Poll boundaries are set at provider level in `helper/src/providers/poll-defaults.ts` but tracked independently per account. Two accounts from the same provider can have different effective intervals at the same time. Defaults: Codex min 60 s / max 1800 s / ratio 2.0; Claude Code min 1800 s / max 3600 s / ratio 1.167. The timer fires every 60 seconds; accounts inside their effective interval are skipped and their previous card is preserved in `latest.json`.
+Poll boundaries are set at provider level in `helper/src/providers/poll-defaults.ts` but tracked independently per account. Two accounts from the same provider can have different effective intervals at the same time. Defaults: Codex min 60 s / max 1800 s / ratio 2.0; Claude Code min 1800 s / max 7200 s / ratio 1.167. The timer fires every 60 seconds; accounts inside their effective interval are skipped and their previous card is preserved in `latest.json`.
 
 ## Codex transport
 
