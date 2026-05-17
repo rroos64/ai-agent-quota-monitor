@@ -8,11 +8,13 @@
   <strong>Stop guessing which AI coding-agent account still has quota.</strong>
 </p>
 
+<p align="center">
 [![CI](https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/rroos64/ai-agent-quota-monitor/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/rroos64/ai-agent-quota-monitor)](https://github.com/rroos64/ai-agent-quota-monitor/releases/latest)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Platform: Linux Cinnamon](https://img.shields.io/badge/platform-Linux%20Cinnamon-green)
 ![Status: early usable](https://img.shields.io/badge/status-early%20usable-orange)
+</p>
 
 AIQM is a local Linux/Cinnamon quota monitor for developers who use multiple AI coding-agent accounts.
 
