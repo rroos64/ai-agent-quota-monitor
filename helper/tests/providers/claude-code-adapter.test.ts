@@ -141,18 +141,16 @@ describe('Claude Code adapter boundary', () => {
       JSON.stringify({ claudeAiOauth: { accessToken: 'redacted-test-token' } })
     );
 
-    const fetchMock = vi
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(
-        new Response(JSON.stringify({ error: { type: 'rate_limit_error' } }), {
-          status: 429,
-          headers: {
-            'not-before': '2026-05-09T15:02:00.000Z',
-            'retry-after': '99',
-            'content-type': 'application/json'
-          }
-        })
-      );
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ error: { type: 'rate_limit_error' } }), {
+        status: 429,
+        headers: {
+          'not-before': '2026-05-09T15:02:00.000Z',
+          'retry-after': '99',
+          'content-type': 'application/json'
+        }
+      })
+    );
 
     try {
       const transport = new ClaudeCodeOAuthUsageTransport();
