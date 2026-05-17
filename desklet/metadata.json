@@ -1,7 +1,7 @@
 {
   "uuid": "ai-agent-quota-monitor@local",
   "name": "AI Agent Quota Monitor",
-  "description": "Passive Cinnamon desklet that renders normalized AI quota state from latest.json.",
+  "description": "Cinnamon desklet that displays AI quota state.",
   "version": "1.0.0",
   "icon": "icon.png",
   "max-instances": "1"
