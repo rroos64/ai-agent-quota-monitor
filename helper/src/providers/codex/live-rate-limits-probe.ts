@@ -472,7 +472,7 @@ function createInitializeRequest() {
       clientInfo: {
         name: 'aiqm',
         title: 'AIQM Codex rate limit probe',
-        version: '1.0.0'
+        version: '1.1.0'
       },
       capabilities: {
         experimentalApi: true,

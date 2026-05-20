@@ -22,7 +22,7 @@ AIQM tests use traceability comments in test files to connect implementation cov
 - BR-018 no desktop notifications: no notification code path exists; verified by code review and absence of Cinnamon notification API usage.
 - BR-019 refresh: polling service tests and systemd installer validation.
 - BR-020 asynchronous refresh: polling-service concurrency test (`polls accounts concurrently while preserving deterministic order`).
-- BR-021 no manual refresh: no manual-refresh button exists in desklet or TUI; verified by code review.
+- BR-021 no desklet manual refresh button: no desklet manual-refresh button exists; CLI/TUI forced refresh is covered by BR-050.
 - BR-022 offline behaviour: polling-service stale-merge tests (offline/auth-required scenarios mark cards as stale).
 - BR-023 battery behaviour: no battery-specific code path exists; polling timer runs unconditionally; verified by code review.
 - BR-024 stale after one failed update: polling-service stale-merge tests (`keeps previous quota visible as stale when a later poll…`).
@@ -51,6 +51,7 @@ AIQM tests use traceability comments in test files to connect implementation cov
 - BR-047 reliable background refresh: systemd installer validation and polling-service latest-state writer tests.
 - BR-048 Codex quota semantics: `helper/tests/providers/` Codex parser and adapter tests (rate-limit window handling, credits field ignored).
 - BR-049 compact desklet UX: desklet render-model grouping, provider summary, and selectionRank tests.
+- BR-050 manual forced poll override: polling-service force/target tests, CLI poll option tests, and TUI setup action/screen-model tests.
 - Security requirements: redaction, secret leak, logger, diagnose/reset tests.
 - Boundary contracts: JSON Schema/Zod parity tests.
 
@@ -87,7 +88,8 @@ The current development slice includes:
 - Desklet collapsible provider sections contracted by default; concertina behaviour (at most one open at a time).
 - TUI account management: add, edit name, reorder, logout-keep-account, delete, re-login.
 - Metadata-only edits do not perform live provider polls.
-- Re-login relies on a single `pollAll()` verification path.
+- Re-login uses targeted forced polling so prior back-off cannot skip verification.
+- Forced polling is exposed through CLI (`--force`, `--provider`/`--email`, `--account`) and setup TUI (`r`, `h` / `refresh-all`), not through a desklet control.
 - Logger file growth is bounded.
 - BR numbering: original BR-022/026 retained in section 6; implementation-alignment requirements renumbered to BR-045/049.
 
@@ -126,13 +128,17 @@ Codex transport tests cover timeout cleanup by asserting that live app-server ch
 Polling-service tests cover BR-044 by verifying:
 
 - Account-specific poll interval overrides are applied independently from provider defaults.
-- `effectivePollIntervalSeconds` doubles when successful quota data is unchanged.
+- `effectivePollIntervalSeconds` is multiplied by the provider-specific backoff ratio when successful quota data is unchanged.
 - `nextPollEligibleAt` is written from `lastAttemptedRefreshAt + effectivePollIntervalSeconds` and preserved for skipped accounts.
 - Reset-time (`resetAt`) drift alone does not count as quota data change.
 - Fresh unchanged accounts use their effective interval for skip decisions, not only the config min.
-- A thrown provider error doubles the interval.
-- Error/non-fresh accounts use their stored effective interval for skip decisions and cap normal doubling at the configured max.
+- A thrown provider error applies the provider-specific backoff ratio.
+- Error/non-fresh accounts use their stored effective interval for skip decisions and cap normal ratio back-off at the configured max.
 - Provider `not-before` and `retry-after` values become the next effective interval even when larger than the configured max.
+- Forced polling attempts accounts that are still inside their effective interval.
+- Targeted forced polling preserves non-selected latest cards and recomputes ranks across the merged card set.
+- Targeted normal polling can still skip the selected account without counting non-selected accounts as skipped.
+- Missing targeted accounts fail clearly before polling.
 
 Desklet render-model tests cover the backend poll label, including future countdowns, due/overdue accounts, long hour/minute formatting, and missing or malformed timing fields.
 

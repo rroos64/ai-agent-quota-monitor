@@ -6,10 +6,10 @@
 #   bash <(curl -fsSL https://raw.githubusercontent.com/rroos64/ai-agent-quota-monitor/main/install.sh) --launch-setup
 #
 # To install a specific release tag:
-#   AIQM_REF=v1.0.0 bash <(curl -fsSL https://raw.githubusercontent.com/rroos64/ai-agent-quota-monitor/main/install.sh)
+#   AIQM_REF=v1.1.0 bash <(curl -fsSL https://raw.githubusercontent.com/rroos64/ai-agent-quota-monitor/main/install.sh)
 #
 # Or use a pinned tag URL directly:
-#   bash <(curl -fsSL https://raw.githubusercontent.com/rroos64/ai-agent-quota-monitor/v1.0.0/install.sh)
+#   bash <(curl -fsSL https://raw.githubusercontent.com/rroos64/ai-agent-quota-monitor/v1.1.0/install.sh)
 #
 # All extra arguments are forwarded to aiqm-local.sh (e.g. --launch-setup).
 set -euo pipefail

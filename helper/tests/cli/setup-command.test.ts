@@ -61,6 +61,9 @@ describe('setup CLI command', () => {
         accounts: []
       }
     });
+    expect(JSON.stringify(result)).toContain('force-refresh the selected account');
+    expect(JSON.stringify(result)).toContain('h/refres(h)-all');
+    expect(JSON.stringify(result)).toContain('refresh-all');
     expect(JSON.stringify(result)).not.toContain('tokenPayload');
   });
 

@@ -29,7 +29,7 @@ The installer clones the repository to `~/.local/share/ai-agent-quota-monitor/so
 To install a specific release tag:
 
 ```bash
-AIQM_REF=v1.0.0 bash <(curl -fsSL https://raw.githubusercontent.com/rroos64/ai-agent-quota-monitor/main/install.sh)
+AIQM_REF=v1.1.0 bash <(curl -fsSL https://raw.githubusercontent.com/rroos64/ai-agent-quota-monitor/main/install.sh)
 ```
 
 ### From a clone
@@ -80,9 +80,13 @@ Home commands:
 (e)dit      edit selected account
 (d)elete    delete selected account
 (l)ogout    remove auth/session but keep selected account listed
+(r)efresh   force-refresh selected account after confirmation
+refres(h)-all force-refresh all accounts after confirmation
 (q)uit      exit
 ↑/↓         select account
 ```
+
+Use forced refresh sparingly. It bypasses AIQM's local back-off skip for the current run and may hit provider rate limits if repeated.
 
 Edit commands:
 
@@ -118,6 +122,19 @@ Reliable refresh is done by:
 aiqm-poll.timer → aiqm poll --json → latest.json → desklet re-render
 ```
 
+The installed systemd timer remains a normal, non-forced poll. It does not pass `--force`, so accounts inside their effective interval are skipped and previous cards are preserved.
+
+Manual override examples:
+
+```bash
+aiqm poll --force
+aiqm poll --json --force
+aiqm poll --force --provider codex --email user@example.com
+aiqm poll --force --account codex:user@example.com
+```
+
+In `aiqm setup`, select an account with ↑/↓ and use `r`/`refresh` to force-refresh it, or use `h`/`refresh-all` to force-refresh every configured account. Forced runs bypass the local skip decision only for that run; AIQM still recomputes future intervals normally and honours provider `not-before`/`retry-after` responses.
+
 Default timer interval: 60 seconds. The helper applies per-provider minimum intervals and per-account progressive back-off:
 
 - **Min interval** (`settings.providerPollIntervalSeconds`): the shortest time between polls for an account. Defaults:
@@ -138,7 +155,7 @@ Default timer interval: 60 seconds. The helper applies per-provider minimum inte
 }
 ```
 
-Fresh accounts reset to their provider minimum when quota percentages, window status, or the set of windows changes. Reset timestamp drift alone is ignored, because some providers report rolling reset timestamps that move on every fetch. Accounts whose quota data remains unchanged, or whose polling returns an error/non-fresh status, double their effective interval up to the configured max. If a provider returns `not-before` or `retry-after`, AIQM honours that value even when it is larger than the configured max. `not-before` takes precedence. The minimum accepted value for either setting is 30 seconds. The timer can wake every 60 seconds; accounts still inside their effective interval are skipped and their previous `latest.json` card is preserved.
+Fresh accounts reset to their provider minimum when quota percentages, window status, or the set of windows changes. Reset timestamp drift alone is ignored, because some providers report rolling reset timestamps that move on every fetch. Accounts whose quota data remains unchanged, or whose polling returns an error/non-fresh status, multiply their effective interval by the provider-specific backoff ratio up to the configured max. If a provider returns `not-before` or `retry-after`, AIQM honours that value even when it is larger than the configured max. `not-before` takes precedence. The minimum accepted value for either setting is 30 seconds. The timer can wake every 60 seconds; accounts still inside their effective interval are skipped and their previous `latest.json` card is preserved.
 
 Each account card in `latest.json` includes `nextPollEligibleAt` when AIQM knows the next real backend poll time. The desklet shows this in the bottom-right of expanded account cards as a countdown plus interval, for example `↻ 12m left / 30m`. If the account is already eligible, the label reads `↻ due / 30m`.
 

@@ -155,7 +155,7 @@ After setup, add the desklet from Cinnamon's desklet settings if it is not shown
 **Pinned release:** to install a specific version, prefix with `AIQM_REF=vX.Y.Z`:
 
 ```bash
-AIQM_REF=v1.0.0 bash <(curl -fsSL https://raw.githubusercontent.com/rroos64/ai-agent-quota-monitor/main/install.sh)
+AIQM_REF=v1.1.0 bash <(curl -fsSL https://raw.githubusercontent.com/rroos64/ai-agent-quota-monitor/main/install.sh)
 ```
 
 ---
@@ -200,6 +200,8 @@ Cl(a)ude    Add a Claude/Anthropic account with AIQM-owned browser login
 (e)dit      Edit selected account
 (d)elete    Remove selected account from AIQM
 (l)ogout    Log selected account out but keep it in the list
+(r)efresh   Force-refresh selected account after confirmation
+refres(h)-all Force-refresh all accounts after confirmation
 (q)uit      Close the TUI and terminal
 ↑/↓         Select account
 ```
@@ -260,7 +262,22 @@ AIQM keeps the last known account state visible while an account is cooling down
 
 Each account card also carries the next backend poll eligibility time. In the expanded desklet view the bottom-right label shows it as a countdown plus the current effective interval, for example `↻ 12m left / 30m`. That is the next real account poll the helper will allow; the systemd timer may wake earlier and skip the account.
 
-The desklet watches `latest.json` and re-renders when it changes. The desklet also has a legacy poll command setting, but the background timer is the reliable production refresh path.
+The desklet watches `latest.json` and re-renders when it changes. The desklet also has a legacy poll command setting, but the background timer is the reliable production refresh path. Normal timer and desklet polling is non-forced: it respects each account's `nextPollEligibleAt`, effective interval and back-off state.
+
+For a deliberate manual override, use the CLI or setup TUI. These forced refreshes bypass the local skip decision for the current run only:
+
+```bash
+aiqm poll --force
+aiqm poll --json --force
+aiqm poll --force --provider codex --email user@example.com
+aiqm poll --force --account codex:user@example.com
+```
+
+Targeting without `--force` is allowed, but it still obeys the account's effective interval and can skip. `--email` requires `--provider`; `--account` cannot be combined with `--provider` or `--email`.
+
+In `aiqm setup`, select an account with ↑/↓, use `r`/`refresh` to force-refresh the selected account, or use `h`/`refresh-all` to force-refresh every configured account. The TUI asks for confirmation and warns that repeated forced polling may hit provider rate limits.
+
+Forced polling does not disable future back-off. After the attempt, AIQM recomputes the next effective interval normally and still honours provider `not-before` / `retry-after` responses.
 
 ### Provider-level boundaries
 
@@ -275,9 +292,9 @@ These are the authoritative defaults. There are no hard-coded values anywhere el
 | Provider | Min interval | Max interval | Backoff ratio | Backoff progression |
 | ------------ | ------------ | ------------ | ------------- | ---------------------------------------------------- |
 | Codex | 60 s (1 min) | 1800 s (30 min) | 2.0 | 1 → 2 → 4 → 8 → 16 → 30 min |
-| Claude Code | 1800 s (30 min) | 3600 s (60 min) | 1.167 | 30 → 35 → 41 → 48 → 56 → 60 min |
+| Claude Code | 1800 s (30 min) | 7200 s (120 min) | 1.167 | 30 → 35 → 41 → 48 → 56 → 66 → 77 → 90 → 105 → 120 min |
 
-To change defaults for any provider, edit `poll-defaults.ts` directly. No other file needs to change.
+Provider defaults are defined in `poll-defaults.ts` and mirrored in config-store defaults used when creating a new config. Keep both locations aligned when changing built-in provider defaults.
 
 ### Account-level tracking
 

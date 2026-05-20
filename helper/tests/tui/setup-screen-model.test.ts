@@ -111,6 +111,12 @@ describe('setup screen model', () => {
     expect(model.instructions.join('\n')).toContain(
       'aiqm setup --provider fake --email <email> --scenario success --poll'
     );
+    expect(model.instructions.join('\n')).toContain(
+      'Use r/refresh to force-refresh the selected account'
+    );
+    expect(model.instructions.join('\n')).toContain('h/refres(h)-all');
+    expect(model.instructions.join('\n')).toContain('refresh-all');
+    expect(model.instructions.join('\n')).toContain('rate limit');
     expect(JSON.stringify(model)).not.toContain('tokenPayload');
     expect(JSON.stringify(model)).not.toContain('SECRET_SENTINEL_DO_NOT_LEAK');
     expect(formatSetupScreenModel(model)).toContain('AI Agent Quota Monitor Setup');
@@ -118,5 +124,10 @@ describe('setup screen model', () => {
     expect(formatSetupScreenModel(model)).toContain('Codex: blocked');
     expect(formatSetupScreenModel(model)).toContain('CLI codex: available (codex 0.1.0)');
     expect(formatSetupScreenModel(model)).toContain('CLI claude: missing');
+    expect(formatSetupScreenModel(model)).toContain(
+      'Use r/refresh to force-refresh the selected account'
+    );
+    expect(formatSetupScreenModel(model)).toContain('h/refres(h)-all');
+    expect(formatSetupScreenModel(model)).toContain('refresh-all');
   });
 });

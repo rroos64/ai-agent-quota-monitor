@@ -12,7 +12,8 @@ import type {
   FakeSetupActionProgress,
   FakeSetupActionResult,
   FakeSetupInput,
-  FakeSetupScenario
+  FakeSetupScenario,
+  ForceRefreshActionResult
 } from './setup-actions.js';
 import { FAKE_SETUP_SCENARIOS } from './setup-actions.js';
 import type { CodexLoginStatus } from '../providers/index.js';
@@ -75,6 +76,11 @@ export type SetupAppProps = {
     displayName?: string;
     displayOrder?: number;
   }) => Promise<AccountEditActionResult>;
+  onForceRefreshAccount?: (input: {
+    provider: string;
+    email: string;
+  }) => Promise<ForceRefreshActionResult>;
+  onForceRefreshAll?: () => Promise<ForceRefreshActionResult>;
 };
 
 type Screen =
@@ -94,6 +100,9 @@ type Screen =
   | 'submitting'
   | 'confirm_logout'
   | 'confirm_signout'
+  | 'confirm_force_refresh_account'
+  | 'confirm_force_refresh_all'
+  | 'force_refreshing'
   | 'logging_out'
   | 'signing_out'
   | 'relogin_waiting'
@@ -125,7 +134,9 @@ export function SetupApp({
   onAccountLogout,
   onAccountSignOut,
   onCodexRelogin,
-  onAccountEdit
+  onAccountEdit,
+  onForceRefreshAccount,
+  onForceRefreshAll
 }: SetupAppProps) {
   const { exit } = useApp();
   const [screen, setScreen] = useState<Screen>('home');
@@ -149,6 +160,9 @@ export function SetupApp({
   const [isRelogin, setIsRelogin] = useState(false);
 
   const selectedAccount = accounts[selectedAccountIndex] ?? null;
+
+  const forceRefreshSummary = (result: ForceRefreshActionResult): string =>
+    `Forced refresh complete: ${String(result.poll.successes)} success(es), ${String(result.poll.failures)} failure(s), ${String(result.poll.skipped)} skipped.`;
 
   const upsertAccount = (account: SetupScreenModel['accounts'][number]): void => {
     setAccounts((current) => {
@@ -285,13 +299,31 @@ export function SetupApp({
           setScreen('confirm_signout');
           return true;
         }
+        if (command === 'r' || command === 'refresh') {
+          if (accounts.length === 0) {
+            setMessage('No accounts configured to refresh.');
+            return true;
+          }
+          setMessage(null);
+          setScreen('confirm_force_refresh_account');
+          return true;
+        }
+        if (command === 'h' || command === 'refresh-all') {
+          if (accounts.length === 0) {
+            setMessage('No accounts configured to refresh.');
+            return true;
+          }
+          setMessage(null);
+          setScreen('confirm_force_refresh_all');
+          return true;
+        }
         if (command === 'q' || command === 'quit') {
           exit();
           return true;
         }
-        if (command === 'h' || command === 'help' || command === '?') {
+        if (command === '?') {
           setMessage(
-            'o Codex/OpenAI, a Claude/Anthropic, e edit, d delete, l logout only, q quit. Use ↑/↓ to select an account.'
+            'Manage accounts, logins, and quota refreshes from the home screen. Use r/refresh for the selected account or h/refresh-all for all accounts; forced refreshes can hit provider rate limits.'
           );
           return true;
         }
@@ -308,7 +340,7 @@ export function SetupApp({
 
       if (screen === 'home' && input && !key.ctrl && !key.meta) {
         const command = input.trim().toLowerCase();
-        if (command.length === 1 && runHomeCommand(command)) {
+        if (command.length === 1 && command !== 'r' && runHomeCommand(command)) {
           setCommandInput('');
           return;
         }
@@ -354,6 +386,66 @@ export function SetupApp({
             .then((result) => {
               setMessage(`Logged out ${result.email}`);
               setScreen('home');
+            })
+            .catch((error: unknown) => {
+              setMessage(error instanceof Error ? error.message : String(error));
+              setScreen('error');
+            });
+          return;
+        }
+      }
+
+      if (screen === 'confirm_force_refresh_account') {
+        if (input === 'n' || input === 'b' || key.escape) {
+          setMessage(null);
+          setScreen('home');
+          return;
+        }
+        if (input === 'y' || key.return) {
+          const account = selectedAccount;
+          if (!onForceRefreshAccount) {
+            setMessage('Force refresh is not available.');
+            setScreen('error');
+            return;
+          }
+          setScreen('force_refreshing');
+          setMessage(`Force-refreshing ${account.email}...`);
+          onForceRefreshAccount({ provider: account.provider, email: account.email })
+            .then((result) => {
+              setMessage(forceRefreshSummary(result));
+              setScreen('result');
+            })
+            .catch((error: unknown) => {
+              setMessage(error instanceof Error ? error.message : String(error));
+              setScreen('error');
+            });
+          return;
+        }
+      }
+
+      if (screen === 'confirm_force_refresh_all') {
+        if (input === 'n' || input === 'b' || key.escape) {
+          setMessage(null);
+          setScreen('home');
+          return;
+        }
+        if (input === 'y' || key.return) {
+          if (accounts.length === 0) {
+            setMessage('No accounts configured to refresh.');
+            setScreen('home');
+            return;
+          }
+          if (!onForceRefreshAll) {
+            setMessage('Force refresh is not available.');
+            setScreen('error');
+            return;
+          }
+          setScreen('force_refreshing');
+          setMessage('Force-refreshing all accounts...');
+          onForceRefreshAll()
+            .then((result) => {
+              setMessage(forceRefreshSummary(result));
+              setScreen('result');
             })
             .catch((error: unknown) => {
               setMessage(error instanceof Error ? error.message : String(error));
@@ -904,6 +996,7 @@ export function SetupApp({
     screen === 'submitting' ||
     screen === 'logging_out' ||
     screen === 'signing_out' ||
+    screen === 'force_refreshing' ||
     screen === 'relogin_waiting' ||
     screen === 'saving_edit';
   const actionTitle = isBusy
@@ -916,9 +1009,11 @@ export function SetupApp({
           ? 'Delete account'
           : screen === 'confirm_signout'
             ? 'Log out account'
-            : screen === 'edit_menu' || screen === 'edit_name' || screen === 'edit_order'
-              ? 'Edit account'
-              : 'Manage account';
+            : screen === 'confirm_force_refresh_account' || screen === 'confirm_force_refresh_all'
+              ? 'Force refresh'
+              : screen === 'edit_menu' || screen === 'edit_name' || screen === 'edit_order'
+                ? 'Edit account'
+                : 'Manage account';
   const providerGroups = accounts.reduce<
     {
       provider: string;
@@ -982,8 +1077,15 @@ export function SetupApp({
         <Text bold>{actionTitle}</Text>
         {screen === 'home' && (
           <Box flexDirection="column">
-            <Text>Commands: C(o)dex | Cl(a)ude | (e)dit | (d)elete | (l)ogout | (q)uit</Text>
-            <Text color="gray">Use ↑/↓ to select an account, then press one command key.</Text>
+            <Text>
+              Commands: C(o)dex | Cl(a)ude | (e)dit | (d)elete | (l)ogout | selected (r)efresh |
+              refres(h)-all | (q)uit
+            </Text>
+            <Text color="gray">Use ↑/↓ to select an account.</Text>
+            <Text color="gray">
+              Manage accounts, logins, and quota refreshes here. Forced refreshes can hit provider
+              rate limits.
+            </Text>
             <Text>&gt; {commandInput}</Text>
           </Box>
         )}
@@ -1071,8 +1173,21 @@ export function SetupApp({
         {screen === 'confirm_signout' && accounts.length > 0 && (
           <Text>Log out {selectedAccount.email} but keep it in the list? y/N Esc/b back</Text>
         )}
+        {screen === 'confirm_force_refresh_account' && accounts.length > 0 && (
+          <Text>
+            Force-refresh {selectedAccount.email}? This bypasses local back-off for this account.
+            y/N Esc/b back
+          </Text>
+        )}
+        {screen === 'confirm_force_refresh_all' && accounts.length > 0 && (
+          <Text>
+            Force-refresh all accounts? Use sparingly; providers may rate limit repeated polling.
+            y/N Esc/b back
+          </Text>
+        )}
         {screen === 'logging_out' && <Text>Removing account...</Text>}
         {screen === 'signing_out' && <Text>Logging out account...</Text>}
+        {screen === 'force_refreshing' && <Text>Force-refreshing quota state...</Text>}
         {screen === 'relogin_waiting' && <Text>Complete browser login. Saving new session...</Text>}
         {screen === 'edit_menu' && (
           <Box flexDirection="column">

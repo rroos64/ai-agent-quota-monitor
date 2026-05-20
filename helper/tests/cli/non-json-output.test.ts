@@ -67,4 +67,23 @@ describe('CLI non-JSON output', () => {
     expect(output).not.toContain('rawMetadata');
     expect(output).not.toContain('SECRET_SENTINEL_DO_NOT_LEAK');
   });
+
+  it('prints forced targeted poll context without unsafe fields', async () => {
+    await withTempEnv();
+    await runTextCommand(['setup', '--provider', 'fake', '--email', 'safe@example.com', '--poll']);
+
+    const output = await runTextCommand([
+      'poll',
+      '--force',
+      '--provider',
+      'fake',
+      '--email',
+      'safe@example.com'
+    ]);
+
+    expect(output).toContain('AIQM poll complete (forced, target fake:safe@example.com):');
+    expect(output).not.toContain('tokenPayload');
+    expect(output).not.toContain('rawMetadata');
+    expect(output).not.toContain('SECRET_SENTINEL_DO_NOT_LEAK');
+  });
 });

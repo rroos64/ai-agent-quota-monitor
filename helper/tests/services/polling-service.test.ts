@@ -103,6 +103,12 @@ function service(harness: Harness, clock: Clock = clockAtNow): PollingService {
   return new PollingService({ ...harness, clock });
 }
 
+function useFakeProviderClock(harness: Harness, clock: Clock): void {
+  const registry = new ProviderRegistry();
+  registry.register(new FakeProviderAdapter(clock));
+  harness.providerRegistry = registry;
+}
+
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -523,6 +529,154 @@ describe('PollingService', () => {
       'provider_error'
     ]);
     expect(await readHistoryLines(harness.historyLogFile)).toHaveLength(1);
+  });
+
+  describe('force and targeted polling', () => {
+    const intervalSettings: AppConfigContract['settings'] = {
+      refreshIntervalMinutes: 5,
+      providerPollIntervalSeconds: { fake: 600 },
+      providerPollMaxIntervalSeconds: { fake: 900 }
+    };
+
+    it('force polls inside the configured provider poll interval', async () => {
+      const harness = await createHarness(clockAtNow);
+      await saveConfig(harness, [account('success')], intervalSettings);
+      await service(harness, clockAtNow).pollAll();
+      useFakeProviderClock(harness, clockAtLater);
+
+      const summary = await service(harness, clockAtLater).pollAll({ force: true });
+      const latest = await harness.latestStateStore.load();
+
+      expect(summary).toMatchObject({ accountsPolled: 1, successes: 1, skipped: 0 });
+      expect(latest.accounts[0]).toMatchObject({ lastAttemptedRefreshAt: later });
+      expect(await readHistoryLines(harness.historyLogFile)).toHaveLength(2);
+    });
+
+    it('force polls all accounts even when they are backed off', async () => {
+      const harness = await createHarness(clockAtNow);
+      await saveConfig(
+        harness,
+        [account('success', 'one@example.com', 0), account('success', 'two@example.com', 1)],
+        intervalSettings
+      );
+      await service(harness, clockAtNow).pollAll();
+      const latest = await harness.latestStateStore.load();
+      latest.accounts = latest.accounts.map((latestAccount) => ({
+        ...latestAccount,
+        effectivePollIntervalSeconds: 900,
+        nextPollEligibleAt: '2026-05-09T12:15:00.000Z'
+      }));
+      await harness.latestStateStore.save(latest);
+      useFakeProviderClock(harness, clockAtLater);
+
+      const summary = await service(harness, clockAtLater).pollAll({ force: true });
+      const updatedLatest = await harness.latestStateStore.load();
+
+      expect(summary).toMatchObject({ accountsPolled: 2, successes: 2, skipped: 0 });
+      expect(
+        updatedLatest.accounts.map((latestAccount) => latestAccount.lastAttemptedRefreshAt)
+      ).toEqual([later, later]);
+      expect(await readHistoryLines(harness.historyLogFile)).toHaveLength(4);
+    });
+
+    it('targeted force polls the selected account and preserves non-selected configured latest cards', async () => {
+      const harness = await createHarness(clockAtNow);
+      await saveConfig(
+        harness,
+        [account('success', 'one@example.com', 0), account('success', 'two@example.com', 1)],
+        intervalSettings
+      );
+      await service(harness, clockAtNow).pollAll();
+      useFakeProviderClock(harness, clockAtLater);
+
+      const summary = await service(harness, clockAtLater).pollAll({
+        force: true,
+        target: { kind: 'account', provider: 'fake', email: ' ONE@example.com ' }
+      });
+      const latest = await harness.latestStateStore.load();
+
+      expect(summary).toMatchObject({
+        accountsConfigured: 2,
+        accountsPolled: 1,
+        successes: 1,
+        skipped: 0
+      });
+      expect(summary.accounts.map((entry) => entry.email)).toEqual(['one@example.com']);
+      expect(latest.accounts.map((latestAccount) => latestAccount.email)).toEqual([
+        'one@example.com',
+        'two@example.com'
+      ]);
+      expect(latest.accounts.map((latestAccount) => latestAccount.lastAttemptedRefreshAt)).toEqual([
+        later,
+        now
+      ]);
+      expect(latest.accounts.map((latestAccount) => latestAccount.selectionRank).sort()).toEqual([
+        1, 2
+      ]);
+      expect(await readHistoryLines(harness.historyLogFile)).toHaveLength(3);
+    });
+
+    it('targeted non-force skips only the selected account inside interval', async () => {
+      const harness = await createHarness(clockAtNow);
+      await saveConfig(
+        harness,
+        [account('success', 'one@example.com', 0), account('success', 'two@example.com', 1)],
+        intervalSettings
+      );
+      await service(harness, clockAtNow).pollAll();
+
+      const summary = await service(harness, clockAtLater).pollAll({
+        target: { kind: 'account', provider: 'fake', email: 'one@example.com' }
+      });
+      const latest = await harness.latestStateStore.load();
+
+      expect(summary).toMatchObject({
+        accountsConfigured: 2,
+        accountsPolled: 0,
+        successes: 0,
+        failures: 0,
+        skipped: 1
+      });
+      expect(summary.accounts).toHaveLength(1);
+      expect(summary.accounts[0]).toMatchObject({ email: 'one@example.com', skipped: true });
+      expect(latest.accounts.map((latestAccount) => latestAccount.email)).toEqual([
+        'one@example.com',
+        'two@example.com'
+      ]);
+      expect(await readHistoryLines(harness.historyLogFile)).toHaveLength(2);
+    });
+
+    it('throws a clear error when the targeted account is not configured', async () => {
+      const harness = await createHarness(clockAtNow);
+      await saveConfig(harness, [account('success', 'one@example.com', 0)]);
+
+      await expect(
+        service(harness, clockAtLater).pollAll({
+          target: { kind: 'account', provider: 'fake', email: ' MISSING@example.com ' }
+        })
+      ).rejects.toThrow('Target account is not configured: fake:missing@example.com');
+    });
+
+    it('does not preserve deleted or otherwise unconfigured latest cards during targeted polling', async () => {
+      const harness = await createHarness(clockAtNow);
+      await saveConfig(harness, [
+        account('success', 'one@example.com', 0),
+        account('success', 'two@example.com', 1)
+      ]);
+      await service(harness, clockAtNow).pollAll();
+      await saveConfig(harness, [account('success', 'one@example.com', 0)]);
+      useFakeProviderClock(harness, clockAtLater);
+
+      await service(harness, clockAtLater).pollAll({
+        force: true,
+        target: { kind: 'account', provider: 'fake', email: 'one@example.com' }
+      });
+      const latest = await harness.latestStateStore.load();
+
+      expect(latest.accounts.map((latestAccount) => latestAccount.email)).toEqual([
+        'one@example.com'
+      ]);
+    });
   });
 
   // Traceability: BR-044 progressive back-off; unchanged successful accounts and errors back off, and latest.json carries nextPollEligibleAt for desklet-visible next real poll timing.

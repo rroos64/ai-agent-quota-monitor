@@ -50,6 +50,13 @@ export type PollingServiceOptions = {
   clock?: Clock;
 };
 
+export type PollTarget = { kind: 'all' } | { kind: 'account'; provider: ProviderId; email: string };
+
+export type PollAllOptions = {
+  force?: boolean;
+  target?: PollTarget;
+};
+
 type AccountPollResult = {
   account: ConfiguredAccount;
   card: AccountQuotaCard;
@@ -74,6 +81,13 @@ function previousCardFor(
   account: ConfiguredAccount
 ): AccountQuotaCard | null {
   const key = accountKey(account.provider, account.email);
+  return previousCardByKey(previousLatest, key);
+}
+
+function previousCardByKey(
+  previousLatest: LatestStateContract,
+  key: string
+): AccountQuotaCard | null {
   return (
     previousLatest.accounts.find((card) => accountKey(card.provider, card.email) === key) ?? null
   );
@@ -288,17 +302,35 @@ export class PollingService {
     this.clock = options.clock ?? systemClock;
   }
 
-  async pollAll(): Promise<PollSummary> {
+  async pollAll(options: PollAllOptions = {}): Promise<PollSummary> {
     const config = await this.configStore.load();
     const previousLatest = await this.latestStateStore.load();
     const generatedAt = this.clock.nowIso();
+    const selectedAccounts = this.selectedAccounts(config.accounts, options.target);
+    const selectedKeys = new Set(
+      selectedAccounts.map((account) => accountKey(account.provider, account.email))
+    );
+    const configuredKeys = new Set(
+      config.accounts.map((account) => accountKey(account.provider, account.email))
+    );
+
     const results = await Promise.all(
-      config.accounts.map((account) =>
-        this.pollAccount(account, previousLatest, generatedAt, config.settings)
+      selectedAccounts.map((account) =>
+        this.pollAccount(
+          account,
+          previousLatest,
+          generatedAt,
+          config.settings,
+          options.force === true
+        )
       )
     );
 
-    const cards = results.map((result) => result.card).sort(compareCards);
+    const preservedCards = previousLatest.accounts.filter((card) => {
+      const key = accountKey(card.provider, card.email);
+      return configuredKeys.has(key) && !selectedKeys.has(key);
+    });
+    const cards = [...results.map((result) => result.card), ...preservedCards].sort(compareCards);
     const rankedCards = assignNoBrainerScores(cards, generatedAt);
     let historyEntriesWritten = 0;
 
@@ -322,9 +354,9 @@ export class PollingService {
     return {
       generatedAt,
       accountsConfigured: config.accounts.length,
-      accountsPolled: config.accounts.length - skipped,
+      accountsPolled: selectedAccounts.length - skipped,
       successes,
-      failures: config.accounts.length - skipped - successes,
+      failures: selectedAccounts.length - skipped - successes,
       skipped,
       staleMerged: staleMergedCount,
       historyEntriesWritten,
@@ -332,11 +364,29 @@ export class PollingService {
     };
   }
 
+  private selectedAccounts(
+    accounts: ConfiguredAccount[],
+    target: PollTarget | undefined
+  ): ConfiguredAccount[] {
+    if (!target || target.kind === 'all') return accounts;
+
+    const normalizedEmail = normalizeEmail(target.email);
+    const key = accountKey(target.provider, normalizedEmail);
+    const account = accounts.find(
+      (configuredAccount) => accountKey(configuredAccount.provider, configuredAccount.email) === key
+    );
+    if (!account) {
+      throw new Error(`Target account is not configured: ${target.provider}:${normalizedEmail}`);
+    }
+    return [account];
+  }
+
   private async pollAccount(
     account: ConfiguredAccount,
     previousLatest: LatestStateContract,
     generatedAt: string,
-    settings: PollSettings
+    settings: PollSettings,
+    force: boolean
   ): Promise<AccountPollResult> {
     const previousCard = previousCardFor(previousLatest, account);
     const minInterval = accountMinPollIntervalSeconds(account, settings);
@@ -344,7 +394,11 @@ export class PollingService {
     const ratio = accountBackoffRatio(account);
     const currentInterval = previousCard?.effectivePollIntervalSeconds ?? minInterval;
 
-    if (shouldSkipAccountPoll(previousCard, generatedAt, currentInterval) && previousCard) {
+    if (
+      !force &&
+      shouldSkipAccountPoll(previousCard, generatedAt, currentInterval) &&
+      previousCard
+    ) {
       return {
         account,
         card: withEffectiveInterval(previousCard, currentInterval),

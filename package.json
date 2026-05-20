@@ -1,6 +1,6 @@
 {
   "name": "ai-agent-quota-monitor",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Local-first AI coding-agent quota monitor with a TypeScript helper and Cinnamon desklet.",
   "scripts": {

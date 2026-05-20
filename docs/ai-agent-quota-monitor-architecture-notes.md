@@ -113,6 +113,8 @@ Suggested commands:
 
 ```bash
 aiqm poll
+aiqm poll --force
+aiqm poll --force --provider codex --email user@example.com
 aiqm status --json
 aiqm account list --json
 aiqm account delete --provider codex --email user@example.com
@@ -120,7 +122,7 @@ aiqm reset --all
 aiqm diagnose
 ```
 
-The scriptable CLI must not depend on the TUI.
+The scriptable CLI must not depend on the TUI. Normal `aiqm poll` calls honour per-account eligibility and back-off; `--force` is an explicit manual override that bypasses the local skip decision for the current run only. It does not disable future interval computation or provider `retry-after`/`not-before` handling.
 
 ## 3.4 TUI Setup
 
@@ -145,6 +147,7 @@ The TUI is responsible for:
 9. Running connection tests.
 10. Showing provider integration health.
 11. Resetting all local data.
+12. Triggering confirmed forced refresh for the selected account (`r`) or all accounts (`h` / `refresh-all`) through the shared polling service.
 
 The TUI must not contain provider-specific business logic. It calls the same service layer used by the CLI.
 
@@ -836,7 +839,7 @@ Claude Code login is started through the official `claude auth login` browser fl
 
 ## ADR-018: Per-account progressive back-off for polling
 
-Polling applies a doubling back-off per account when quota data is unchanged or when polling returns an error/non-fresh result. The effective interval for each account is stored in `latest.json` as `effectivePollIntervalSeconds` so back-off persists across timer runs without a separate state file. A fresh poll that detects changed quota percentages, window status, or the set of windows resets the account to the configured provider minimum. Reset timestamp drift alone is ignored because some providers report rolling reset times that move on every fetch. This keeps active accounts responsive while letting idle or failing accounts settle at longer intervals. The `providerPollIntervalSeconds` config key is the provider default minimum; `providerPollMaxIntervalSeconds` is the provider default back-off ceiling. Individual accounts can override those defaults in `providerConfig` with `pollIntervalSeconds`/`minPollIntervalSeconds` and `pollMaxIntervalSeconds`/`maxPollIntervalSeconds`. Provider defaults (from `PROVIDER_POLL_DEFAULTS` in `poll-defaults.ts`): Codex min 60 s / max 1800 s / ratio 2.0; Claude Code min 1800 s / max 7200 s / ratio 1.167; Antigravity placeholder min 300 s / max 3600 s / ratio 2.0 (update when API behaviour is known).
+Polling applies provider-specific ratio back-off per account when quota data is unchanged or when polling returns an error/non-fresh result. The effective interval for each account is stored in `latest.json` as `effectivePollIntervalSeconds` so back-off persists across timer runs without a separate state file. A fresh poll that detects changed quota percentages, window status, or the set of windows resets the account to the configured provider minimum. Reset timestamp drift alone is ignored because some providers report rolling reset times that move on every fetch. This keeps active accounts responsive while letting idle or failing accounts settle at longer intervals. The `providerPollIntervalSeconds` config key is the provider default minimum; `providerPollMaxIntervalSeconds` is the provider default back-off ceiling. Individual accounts can override those defaults in `providerConfig` with `pollIntervalSeconds`/`minPollIntervalSeconds` and `pollMaxIntervalSeconds`/`maxPollIntervalSeconds`. Provider defaults (from `PROVIDER_POLL_DEFAULTS` in `poll-defaults.ts`): Codex min 60 s / max 1800 s / ratio 2.0; Claude Code min 1800 s / max 7200 s / ratio 1.167; Antigravity placeholder min 300 s / max 3600 s / ratio 2.0 (update when API behaviour is known).
 
 ## ADR-017: Claude Code statusLine snapshots retained as passive fallback
 

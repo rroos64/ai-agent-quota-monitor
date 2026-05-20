@@ -1,6 +1,6 @@
 {
   "name": "@ai-agent-quota-monitor/helper",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Node.js helper CLI for AI Agent Quota Monitor.",
   "type": "module",

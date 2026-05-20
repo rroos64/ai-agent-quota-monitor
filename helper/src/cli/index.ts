@@ -14,7 +14,7 @@ import { registerStatusCommand } from './commands/status.js';
 export function buildProgram(): Command {
   const program = new Command();
 
-  program.name('aiqm').description('AI Agent Quota Monitor helper CLI').version('1.0.0');
+  program.name('aiqm').description('AI Agent Quota Monitor helper CLI').version('1.1.0');
 
   registerSetupCommand(program);
   registerCodexLiveProbeCommand(program);

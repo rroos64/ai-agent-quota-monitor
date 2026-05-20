@@ -86,6 +86,8 @@ export function buildSetupScreenModel(
       'Press a to add a Claude/Anthropic account using AIQM-owned browser login and passive statusLine quota capture.',
       'Flow: email → display name → start auth → poll status → save → test quota → optional poll.',
       'No tokens or provider secrets are displayed in the TUI.',
+      'Use r/refresh to force-refresh the selected account; this bypasses local back-off/rate-limit spacing for that account.',
+      'Use h/refres(h)-all or type refresh-all then Enter to force-refresh all accounts; use sparingly because providers may rate limit repeated polling.',
       'Press a only for the development fake-provider flow.',
       'Development fake setup also works non-interactively:',
       'aiqm setup --provider fake --email <email> --scenario success --poll',

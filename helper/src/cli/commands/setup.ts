@@ -10,6 +10,8 @@ import {
   formatSetupScreenModel,
   editAccountAction,
   exportCodexEvidenceAction,
+  forceRefreshAccountAction,
+  forceRefreshAllAction,
   logoutAccountAction,
   pollClaudeAuthStatusAction,
   pollCodexAuthStatusAction,
@@ -77,7 +79,9 @@ export function registerSetupCommand(program: Command): void {
             onAccountSignOut: (input) => signOutAccountAction(input, services),
             onCodexRelogin: (input) => reloginCodexAccountAction(input, services),
             onClaudeRelogin: (input) => reloginClaudeAccountAction(input, services),
-            onAccountEdit: (input) => editAccountAction(input, services)
+            onAccountEdit: (input) => editAccountAction(input, services),
+            onForceRefreshAccount: (input) => forceRefreshAccountAction(input, services),
+            onForceRefreshAll: () => forceRefreshAllAction(services)
           })
         );
         await app.waitUntilExit();

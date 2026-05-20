@@ -19,24 +19,29 @@ async function withTempEnv(): Promise<{ dataDir: string; cacheDir: string }> {
   return { dataDir, cacheDir };
 }
 
-function fakeAccount(): ConfiguredAccount {
+function fakeAccount(email = 'dev@example.com', displayOrder = 0): ConfiguredAccount {
   return {
-    id: accountIdFor('fake', 'dev@example.com'),
+    id: accountIdFor('fake', email),
     provider: 'fake',
-    email: 'dev@example.com',
-    displayOrder: 0,
+    email,
+    displayOrder,
     providerConfig: { scenario: 'success' },
     createdAt: now,
     updatedAt: now
   };
 }
 
-async function seedConfig(dataDir: string, cacheDir: string): Promise<void> {
+async function seedConfig(
+  dataDir: string,
+  cacheDir: string,
+  accounts: ConfiguredAccount[] = [fakeAccount()],
+  settings: AppConfigContract['settings'] = { refreshIntervalMinutes: 5 }
+): Promise<void> {
   const paths = resolveAppPaths({ dataDir, cacheDir });
   const config: AppConfigContract = {
     schemaVersion: '1',
-    accounts: [fakeAccount()],
-    settings: { refreshIntervalMinutes: 5 }
+    accounts,
+    settings
   };
   await new ConfigStore(paths).save(config);
 }
@@ -63,6 +68,12 @@ async function runCommand(args: string[]): Promise<unknown> {
   expect(errorOutput).toEqual([]);
   expect(output).toHaveLength(1);
   return JSON.parse(output[0] ?? 'null') as unknown;
+}
+
+async function expectCommandRejects(args: string[], message: string): Promise<void> {
+  const program = buildProgram();
+  program.exitOverride();
+  await expect(program.parseAsync(['node', 'aiqm', ...args])).rejects.toThrow(message);
 }
 
 // Traceability: BR: scriptable helper CLI; AC: status reads latest only, poll writes latest, JSON output is safe; TS: TSD CLI commands.
@@ -96,6 +107,114 @@ describe('CLI JSON commands', () => {
     });
     expect(JSON.stringify(parsed)).not.toContain('rawMetadata');
     expect(JSON.stringify(parsed)).not.toContain('tokenPayload');
+  });
+
+  it('poll --json --force bypasses provider interval skip', async () => {
+    const { dataDir, cacheDir } = await withTempEnv();
+    await seedConfig(dataDir, cacheDir, [fakeAccount()], {
+      refreshIntervalMinutes: 5,
+      providerPollIntervalSeconds: { fake: 600 }
+    });
+    await runCommand(['poll', '--json']);
+
+    const parsed = await runCommand(['poll', '--json', '--force']);
+
+    expect(parsed).toMatchObject({
+      summary: {
+        accountsConfigured: 1,
+        accountsPolled: 1,
+        successes: 1,
+        skipped: 0,
+        historyEntriesWritten: 1
+      }
+    });
+    expect(JSON.stringify(parsed)).not.toContain('tokenPayload');
+  });
+
+  it('poll --json --force --provider --email targets one account', async () => {
+    const { dataDir, cacheDir } = await withTempEnv();
+    await seedConfig(
+      dataDir,
+      cacheDir,
+      [fakeAccount('dev@example.com', 0), fakeAccount('other@example.com', 1)],
+      { refreshIntervalMinutes: 5, providerPollIntervalSeconds: { fake: 600 } }
+    );
+    await runCommand(['poll', '--json']);
+
+    const parsed = await runCommand([
+      'poll',
+      '--json',
+      '--force',
+      '--provider',
+      'fake',
+      '--email',
+      ' Dev@Example.COM '
+    ]);
+
+    expect(parsed).toMatchObject({
+      summary: {
+        accountsConfigured: 2,
+        accountsPolled: 1,
+        successes: 1,
+        skipped: 0,
+        accounts: [{ provider: 'fake', email: 'dev@example.com' }]
+      }
+    });
+    expect(JSON.stringify(parsed)).not.toContain('tokenPayload');
+  });
+
+  it('poll --json --force --account targets one account via shorthand', async () => {
+    const { dataDir, cacheDir } = await withTempEnv();
+    await seedConfig(
+      dataDir,
+      cacheDir,
+      [fakeAccount('dev@example.com', 0), fakeAccount('other@example.com', 1)],
+      { refreshIntervalMinutes: 5, providerPollIntervalSeconds: { fake: 600 } }
+    );
+    await runCommand(['poll', '--json']);
+
+    const parsed = await runCommand([
+      'poll',
+      '--json',
+      '--force',
+      '--account',
+      'fake:OTHER@example.com'
+    ]);
+
+    expect(parsed).toMatchObject({
+      summary: {
+        accountsConfigured: 2,
+        accountsPolled: 1,
+        successes: 1,
+        accounts: [{ provider: 'fake', email: 'other@example.com' }]
+      }
+    });
+  });
+
+  it('rejects invalid poll target option combinations', async () => {
+    await withTempEnv();
+
+    await expectCommandRejects(
+      ['poll', '--email', 'dev@example.com'],
+      '--email requires --provider'
+    );
+    await expectCommandRejects(['poll', '--provider', 'fake'], '--provider requires --email');
+    await expectCommandRejects(
+      [
+        'poll',
+        '--account',
+        'fake:dev@example.com',
+        '--provider',
+        'fake',
+        '--email',
+        'dev@example.com'
+      ],
+      '--account cannot be used with --provider or --email'
+    );
+    await expectCommandRejects(
+      ['poll', '--provider', 'unknown', '--email', 'dev@example.com'],
+      'Unsupported provider for account add/delete: unknown'
+    );
   });
 
   it('status --json reads latest written by poll --json without polling again', async () => {

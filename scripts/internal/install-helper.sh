@@ -22,7 +22,7 @@ cat >"$HOME/.local/bin/aiqm-setup-terminal" <<'EOF'
 set -euo pipefail
 AIQM_BIN="$HOME/.local/bin/aiqm"
 AIQM_REAL_BIN="$(readlink -f "$AIQM_BIN" 2>/dev/null || printf '%s' "$AIQM_BIN")"
-AIQM_NODE_BIN="$(dirname "$AIQM_REAL_BIN")"
+AIQM_NODE_BIN="$(dirname "$(command -v node 2>/dev/null || printf '%s' "$AIQM_REAL_BIN")")"
 SETUP_CMD='export PATH="$HOME/.local/bin:'"$AIQM_NODE_BIN"':$PATH"; export TERM="${TERM:-xterm-256color}"; clear; "$HOME/.local/bin/aiqm" setup; status=$?; if [ $status -ne 0 ]; then echo; read -r -p "Press Enter to close..."; fi; exit $status'
 
 SCREEN_INFO=""
@@ -49,14 +49,18 @@ else
   TERMINAL_GEOMETRY="80x24"
 fi
 
-if command -v gnome-terminal >/dev/null 2>&1; then
-  exec gnome-terminal --title="AIQM Setup" --geometry="$TERMINAL_GEOMETRY" -- bash -ic "$SETUP_CMD"
-elif command -v mate-terminal >/dev/null 2>&1; then
+if command -v dbus-update-activation-environment >/dev/null 2>&1; then
+  dbus-update-activation-environment --systemd DISPLAY XAUTHORITY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP DBUS_SESSION_BUS_ADDRESS >/dev/null 2>&1 || true
+fi
+
+if command -v mate-terminal >/dev/null 2>&1; then
   exec mate-terminal --title="AIQM Setup" --geometry="$TERMINAL_GEOMETRY" -- bash -ic "$SETUP_CMD"
 elif command -v xterm >/dev/null 2>&1; then
   exec xterm -T "AIQM Setup" -geometry "$TERMINAL_GEOMETRY" -e bash -ic "$SETUP_CMD"
 elif command -v x-terminal-emulator >/dev/null 2>&1; then
   exec x-terminal-emulator -geometry "$TERMINAL_GEOMETRY" -e bash -ic "$SETUP_CMD"
+elif command -v gnome-terminal >/dev/null 2>&1; then
+  exec gnome-terminal --title="AIQM Setup" --geometry="$TERMINAL_GEOMETRY" -- bash -ic "$SETUP_CMD"
 else
   exec "$AIQM_BIN" setup
 fi

@@ -20,6 +20,8 @@ Production polling is scheduled by a user systemd timer:
 aiqm-poll.timer → aiqm-poll.service → ~/.local/bin/aiqm poll --json
 ```
 
+This scheduled path is normal, non-forced polling and respects per-account `nextPollEligibleAt`, effective intervals, and back-off. Manual overrides are available through `aiqm poll --force` and setup TUI refresh commands; they bypass local skip checks for the selected run only.
+
 The desklet watches the latest-state directory and re-renders when `latest.json` is atomically replaced.
 
 ## Provider boundary
@@ -67,6 +69,8 @@ Contracts are under `contracts/v1/` and mirrored by Zod schemas.
 - `latest-state.schema.json`: display-safe desklet contract. Each `accountQuotaCard` carries optional `effectivePollIntervalSeconds` (positive integer) and optional `nextPollEligibleAt` (ISO date-time or null). Together they tell the desklet the current back-off interval and the next real backend poll time for that account. They are not in the required array; absence is treated as unknown display timing, with the helper falling back to configured polling defaults internally.
 - `history-entry.schema.json`: display-safe append-only quota history rows.
 - `token-record.schema.json`: token store contract for providers that use token references.
+
+`aiqm poll --json` also emits a display-safe CLI summary (`generatedAt`, configured/polled/skipped counts, success/failure counts, history write count, and per-account statuses) plus `latestStateFile`. That summary is not a persisted v1 storage contract and does not require a JSON Schema change.
 
 ## Secret boundary
 

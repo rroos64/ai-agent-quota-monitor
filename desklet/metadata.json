@@ -2,7 +2,7 @@
   "uuid": "ai-agent-quota-monitor@local",
   "name": "AI Agent Quota Monitor",
   "description": "Cinnamon desklet that displays AI quota state.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "icon": "icon.png",
   "max-instances": "1"
 }

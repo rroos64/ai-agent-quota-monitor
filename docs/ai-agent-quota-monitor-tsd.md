@@ -801,10 +801,19 @@ export class PollingService {
     private readonly clock: Clock
   ) {}
 
-  async pollAll(): Promise<LatestState> {
+  async pollAll(options: PollAllOptions = {}): Promise<PollSummary> {
     // implementation detail
   }
 }
+
+export type PollTarget =
+  | { kind: 'all' }
+  | { kind: 'account'; provider: ProviderId; email: string };
+
+export type PollAllOptions = {
+  force?: boolean;
+  target?: PollTarget;
+};
 ```
 
 ## 10.2 Polling Rules
@@ -815,6 +824,12 @@ export class PollingService {
 4. The previous quota value must be retained when a refresh fails and previous data exists.
 5. An account becomes stale after one failed update.
 6. If no previous data exists, the account is shown as unavailable.
+7. `pollAll()` with no options is normal polling and retains the existing skip/back-off behaviour.
+8. `pollAll({ force: true })` bypasses local eligibility checks for selected accounts during that run only.
+9. Targeted polling selects only the configured account matching provider + normalised email; if it is missing, the service raises a clear configuration error.
+10. A targeted run preserves non-selected latest-state cards for still-configured accounts, then recomputes No-Brainer ranks over the full card set.
+11. History is appended only for successful, actually-polled accounts; skipped accounts and non-selected accounts do not add history entries.
+12. After a forced attempt, interval/back-off computation is identical to a normal attempted poll, including provider `not-before` and `retry-after` handling.
 
 ## 10.3 Stale-State Merge
 
@@ -844,7 +859,7 @@ If no previous account data exists:
 
 ```bash
 aiqm setup
-aiqm poll [--json]
+aiqm poll [--json] [--force] [--provider <provider> --email <email> | --account <provider:email>]
 aiqm status --json
 aiqm account list [--json]
 aiqm account delete --provider <provider> --email <email>
@@ -873,7 +888,7 @@ Exit codes:
 Purpose:
 
 ```text
-Fetch quota for all configured accounts and update latest.json and history.log.
+Fetch quota for configured accounts and update latest.json and history.log.
 ```
 
 Exit codes:
@@ -886,7 +901,27 @@ Exit codes:
 | 3 | Storage unavailable |
 | 4 | Unexpected error |
 
-`--json` output should include a summary, not raw tokens or raw provider responses.
+Options:
+
+| Option | Meaning |
+|---|---|
+| `--json` | Print display-safe JSON containing `summary` and `latestStateFile`. |
+| `--force` | Bypass local poll interval/back-off skip checks for selected accounts in this run. |
+| `--provider <provider> --email <email>` | Target one configured account by provider and email. Targeting without `--force` still obeys skip rules. |
+| `--account <provider:email>` | Shorthand target for one configured account. Mutually exclusive with `--provider`/`--email`. |
+
+Examples:
+
+```bash
+aiqm poll --force
+aiqm poll --json --force
+aiqm poll --force --provider codex --email user@example.com
+aiqm poll --force --account codex:user@example.com
+```
+
+Validation rules: `--email` requires `--provider`; `--provider` requires `--email`; `--account` cannot be combined with either field; unknown providers fail before polling.
+
+`--json` output should include a summary, not raw tokens or raw provider responses. The current summary includes `generatedAt`, `accountsConfigured`, `accountsPolled`, `successes`, `failures`, `skipped`, `staleMerged`, `historyEntriesWritten`, and per-account summaries. It is CLI output, not a persisted v1 storage contract.
 
 ## 11.4 `aiqm status --json`
 
@@ -1478,7 +1513,7 @@ Production refresh is now owned by user `systemd` units installed by `scripts/ai
 ~/.config/systemd/user/aiqm-poll.timer
 ```
 
-The service executes `~/.local/bin/aiqm poll --json`. The timer defaults to 60 seconds. `aiqm poll` applies per-provider minimum intervals and per-account progressive back-off before calling provider usage endpoints.
+The service executes `~/.local/bin/aiqm poll --json`. The timer defaults to 60 seconds. This background path is non-forced: `aiqm poll` applies per-provider minimum intervals and per-account progressive back-off before calling provider usage endpoints.
 
 ### Progressive back-off algorithm
 
@@ -1495,6 +1530,8 @@ Poll boundaries are set at provider level in `helper/src/providers/poll-defaults
 
 `nextPollEligibleAt` is derived from `lastAttemptedRefreshAt + effectivePollIntervalSeconds`. The desklet may display it as a local countdown but must not use it to drive provider polling.
 
+Manual force (`aiqm poll --force` or the setup TUI force-refresh actions) skips step 2 for the selected account set only. It does not clear stored intervals, does not disable future back-off, and does not override provider wait instructions when computing the next interval after the attempted poll.
+
 ## Codex transport
 
 Codex quota polling uses a live Codex app-server WebSocket transport. Only `account/rateLimits/read` is sent. The transport captures child stderr, handles child `error` events, retries startup to reduce port race failures, and resolves the Codex binary from `AIQM_CODEX_BIN`, `CODEX_BIN`, `PATH`, or the active Node binary directory.
@@ -1506,11 +1543,18 @@ Codex credits are retained only as raw safe metadata. `credits.hasCredits` does 
 The setup TUI command model is:
 
 ```text
-Home: (a)dd (e)dit (d)elete (l)ogout (q)uit, ↑/↓ select
+Home: (o) Codex, (a) Claude, (e)dit, (d)elete, (l)ogout, (r)efresh selected, refres(h)-all, (q)uit, ↑/↓ select
 Edit: (n)ame (o)rder (r)e-login (l)ogout (b)ack
 ```
 
-Order editing uses ↑/↓ live movement and Enter to save. Metadata-only edits do not poll providers. Re-login updates the existing account's Codex profile and verifies via one `pollAll()` call. Logout removes auth/session state but keeps the account configured. Delete removes account/profile state.
+Order editing uses ↑/↓ live movement and Enter to save. Metadata-only edits do not poll providers. Re-login updates the existing account's provider profile and verifies via targeted forced polling so prior back-off cannot skip the validation attempt. Logout removes auth/session state but keeps the account configured. Delete removes account/profile state.
+
+Home force-refresh commands call setup action wrappers rather than provider code directly:
+
+- `r` / `refresh`: confirm and run `pollAll({ force: true, target: { kind: 'account', provider, email } })` for the selected account.
+- `h` / `refresh-all`: confirm and run `pollAll({ force: true, target: { kind: 'all' } })`.
+
+The TUI displays concise success/failure/skipped counts and warns that repeated forced refreshes can hit provider rate limits. If no accounts are configured, refresh commands show a friendly message and make no provider call.
 
 ## Desklet
 

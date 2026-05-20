@@ -126,7 +126,7 @@ The No-Brainer Score must degrade low-confidence or stale snapshots rather than 
 
 Back-off triggers: rate-limit responses, authentication failures, repeated network failures, repeated parse failures, unexpected response shapes.
 
-The app must not call the unofficial API while `backoffUntil` is in the future. Manual refresh may request a refresh but must still respect hard back-off unless the user explicitly accepts the risk.
+The app must not call the unofficial API while `backoffUntil` is in the future during normal background polling. Manual forced refresh now exists in the CLI/TUI and is an explicit user risk acceptance path; any future Claude source-specific hard back-off must decide whether it is stricter than the current generic force override and document that boundary.
 
 ### Security requirements
 

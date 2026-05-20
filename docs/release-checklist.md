@@ -24,6 +24,16 @@ The development-flow validation script uses temporary `AIQM_DATA_DIR` and `AIQM_
 - [ ] `reset --all` removes helper-managed config/token/latest/history/log files under configured app paths.
 - [ ] Public install docs point to the `install.sh` one-liner as the primary install path.
 
+## Manual forced-poll smoke
+
+Use credential-free fake provider data where possible:
+
+- [ ] Configure a fake account with a long interval/back-off.
+- [ ] Run a normal `aiqm poll --json` after an initial successful poll and confirm the account can be skipped while inside its effective interval.
+- [ ] Run `aiqm poll --json --force` and confirm an attempted refresh occurs and history/latest-state behaviour remains display-safe.
+- [ ] Add a second fake account, run `aiqm poll --json --force --account fake:dev@example.com`, and confirm only the target is attempted while `latest.json` still contains both accounts.
+- [ ] Launch `aiqm setup`, confirm the home command row documents `r` and `h` / `refresh-all`, force-refresh the selected account, then force-refresh all accounts.
+
 ## Manual desklet smoke
 
 - [ ] Run the one-liner installer (`bash <(curl -fsSL .../install.sh)`) or `scripts/aiqm-local.sh install` from a clone.

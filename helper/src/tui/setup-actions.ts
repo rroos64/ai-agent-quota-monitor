@@ -1,7 +1,7 @@
 import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { AppServices } from '../app/index.js';
-import { isProviderId, type ConfiguredAccount } from '../domain/index.js';
+import { isProviderId, type ConfiguredAccount, type ProviderId } from '../domain/index.js';
 import {
   addClaudeAccount,
   addCodexAccount,
@@ -105,6 +105,15 @@ export type ClaudeReloginInput = {
   claudeConfigDir: string;
 };
 
+export type ForceRefreshAccountInput = {
+  provider: string;
+  email: string;
+};
+
+export type ForceRefreshActionResult = {
+  poll: PollSummary;
+};
+
 export type AccountLogoutActionResult = {
   provider: string;
   email: string;
@@ -128,6 +137,41 @@ export type ClaudeReloginActionResult = AccountEditActionResult;
 
 export function isValidSetupEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+
+function normalizeSetupEmail(email: string): string {
+  const normalized = email.trim().toLowerCase();
+  if (!isValidSetupEmail(normalized)) {
+    throw new Error(`Invalid email address: ${email}`);
+  }
+  return normalized;
+}
+
+function validateActionProvider(provider: string): ProviderId {
+  if (!isProviderId(provider)) {
+    throw new Error(`Unsupported provider: ${provider}`);
+  }
+  return provider;
+}
+
+export async function forceRefreshAccountAction(
+  input: ForceRefreshAccountInput,
+  services: AppServices
+): Promise<ForceRefreshActionResult> {
+  const provider = validateActionProvider(input.provider);
+  const email = normalizeSetupEmail(input.email);
+  const poll = await services.pollingService.pollAll({
+    force: true,
+    target: { kind: 'account', provider, email }
+  });
+  return { poll };
+}
+
+export async function forceRefreshAllAction(
+  services: AppServices
+): Promise<ForceRefreshActionResult> {
+  const poll = await services.pollingService.pollAll({ force: true, target: { kind: 'all' } });
+  return { poll };
 }
 
 export async function startCodexAuthAction(
@@ -395,7 +439,10 @@ export async function reloginCodexAccountAction(
   const providerConfig = { ...(existing.providerConfig ?? {}), codexHome: input.codexHome };
   const nextConfig = await services.configStore.updateAccount(existing.id, { providerConfig });
   const updated = nextConfig.accounts.find((account) => account.id === existing.id) ?? existing;
-  const poll = await services.pollingService.pollAll();
+  const poll = await services.pollingService.pollAll({
+    force: true,
+    target: { kind: 'account', provider: 'codex', email }
+  });
   const polledAccount = poll.accounts.find((account) => account.accountId === existing.id);
   if (!polledAccount?.success) {
     throw new Error(polledAccount?.errorHint ?? 'Codex quota unreadable after re-login');
@@ -433,14 +480,26 @@ export async function reloginClaudeAccountAction(
     throw new Error(`Claude Code login is not complete: ${status.status}`);
   }
 
-  const poll = await services.pollingService.pollAll();
+  const providerConfig = {
+    ...(existing.providerConfig ?? {}),
+    claudeConfigDir: input.claudeConfigDir
+  };
+  const nextConfig = await services.configStore.updateAccount(existing.id, { providerConfig });
+  const poll = await services.pollingService.pollAll({
+    force: true,
+    target: { kind: 'account', provider: 'claude-code', email }
+  });
+  const polledAccount = poll.accounts.find((account) => account.accountId === existing.id);
+  if (!polledAccount?.success) {
+    throw new Error(polledAccount?.errorHint ?? 'Claude Code quota unreadable after re-login');
+  }
 
   await services.logger.info('setup.tui.claude.relogin', 'Interactive Claude re-login completed', {
     provider: 'claude-code',
     email
   });
 
-  const accounts = await services.configStore.getAccounts();
+  const accounts = nextConfig.accounts;
   const updated = accounts.find((a) => a.id === existing.id) ?? existing;
   const displayName =
     typeof updated.providerConfig?.displayName === 'string'

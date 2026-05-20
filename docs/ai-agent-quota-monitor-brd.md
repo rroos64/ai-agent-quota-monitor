@@ -117,7 +117,7 @@ The first version does not include:
 5. Automatic account rotation.
 6. Best-account recommendation.
 7. Desktop notifications.
-8. Manual refresh button.
+8. Desklet manual refresh button.
 9. Privacy mode or email masking.
 10. Account reordering.
 11. Quota history charts.
@@ -170,17 +170,17 @@ The setup flow must allow the user to select the provider, enter the account ema
 
 **BR-001-AC-001: Add a supported provider account**
 
-Given I am on the setup screen  
-When I add a supported provider account  
-Then I can select the provider  
-And I can enter the account email address  
+Given I am on the setup screen
+When I add a supported provider account
+Then I can select the provider
+And I can enter the account email address
 And I can start the provider’s normal authentication flow
 
 **BR-001-AC-002: Show newly added account immediately**
 
-Given I add a new account in setup  
-When the account is saved  
-Then the account appears in the desklet view immediately  
+Given I add a new account in setup
+When the account is saved
+Then the account appears in the desklet view immediately
 And if quota has not yet been fetched, the account card shows quota unavailable
 
 ### BR-002: Provider Authentication
@@ -193,17 +193,17 @@ The desklet must store the resulting authentication token locally so the account
 
 **BR-002-AC-001: Complete provider authentication**
 
-Given I am adding a provider account  
-When the provider requires interactive authentication  
-Then I can complete the provider’s normal sign-in flow  
-And I can complete provider 2FA where required  
+Given I am adding a provider account
+When the provider requires interactive authentication
+Then I can complete the provider’s normal sign-in flow
+And I can complete provider 2FA where required
 And the account is saved only after authentication succeeds
 
 **BR-002-AC-002: Reuse stored authentication**
 
-Given an account has been authenticated successfully  
-When the desklet performs a later quota refresh  
-Then the desklet can use the stored authentication token  
+Given an account has been authenticated successfully
+When the desklet performs a later quota refresh
+Then the desklet can use the stored authentication token
 And I am not required to sign in again for every refresh
 
 ### BR-003: Email Validation
@@ -216,10 +216,10 @@ If the authenticated account does not match the entered email address, the deskl
 
 **BR-003-AC-001: Validate authenticated email address**
 
-Given I enter an email address during account setup  
-When provider authentication completes  
-Then the desklet validates that the authenticated account matches the entered email address  
-And if the email does not match, the account is not saved as a valid account  
+Given I enter an email address during account setup
+When provider authentication completes
+Then the desklet validates that the authenticated account matches the entered email address
+And if the email does not match, the account is not saved as a valid account
 And the setup screen shows a clear mismatch message
 
 ### BR-004: Token Storage
@@ -234,21 +234,21 @@ The product must treat JSON token storage as a known security risk and make this
 
 **BR-004-AC-001: Store authentication token locally**
 
-Given provider authentication succeeds  
-When the account is saved  
+Given provider authentication succeeds
+When the account is saved
 Then the resulting authentication token is stored in a local JSON file
 
 **BR-004-AC-002: Show token storage location**
 
-Given I open the setup screen  
-When local authentication storage is configured  
-Then I can see the local JSON token file location  
+Given I open the setup screen
+When local authentication storage is configured
+Then I can see the local JSON token file location
 And I can understand that this file contains sensitive provider tokens
 
 **BR-004-AC-003: Document JSON token risk**
 
-Given I read the product documentation  
-When token storage is described  
+Given I read the product documentation
+When token storage is described
 Then the documentation clearly states that JSON token storage is a v1 security risk
 
 ### BR-005: Delete Account
@@ -263,10 +263,10 @@ Deleting an account must not delete existing quota history for that account.
 
 **BR-005-AC-001: Delete configured account**
 
-Given an account is configured  
-When I delete the account from setup  
-Then the account is removed from the desklet view  
-And it is no longer refreshed  
+Given an account is configured
+When I delete the account from setup
+Then the account is removed from the desklet view
+And it is no longer refreshed
 And existing quota history for that account is not deleted
 
 ### BR-006: Reset All Local Data
@@ -279,11 +279,11 @@ This removes configured accounts, stored tokens, latest quota values and local q
 
 **BR-006-AC-001: Reset local data**
 
-Given local desklet data exists  
-When I choose reset all local data  
-Then configured accounts are removed  
-And stored tokens are removed  
-And latest quota values are removed  
+Given local desklet data exists
+When I choose reset all local data
+Then configured accounts are removed
+And stored tokens are removed
+And latest quota values are removed
 And quota history is removed
 
 ## 6.2 Display Requirements
@@ -300,10 +300,10 @@ Accounts within each provider group must be shown in the order they were added.
 
 **BR-007-AC-001: Group accounts by provider**
 
-Given I have configured accounts for multiple supported providers  
-When the desklet loads  
-Then all configured accounts are shown in one combined view  
-And accounts are grouped by provider  
+Given I have configured accounts for multiple supported providers
+When the desklet loads
+Then all configured accounts are shown in one combined view
+And accounts are grouped by provider
 And accounts within each provider group are shown in the order they were added
 
 ### BR-008: Account Cards
@@ -325,20 +325,20 @@ Each card must show:
 
 **BR-008-AC-001: Display account card content**
 
-Given a configured account is shown in the desklet  
-When the account card is displayed  
-Then the card shows the provider name  
-And the account email address  
-And available provider quota windows  
-And used percentage for each quota window  
-And a progress bar for each quota window  
+Given a configured account is shown in the desklet
+When the account card is displayed
+Then the card shows the provider name
+And the account email address
+And available provider quota windows
+And used percentage for each quota window
+And a progress bar for each quota window
 And relative reset time for each quota window where available
 
 **BR-008-AC-002: Display card status notes**
 
-Given an account has stale quota data or quota cannot be fetched  
-When the account card is displayed  
-Then the card shows the relevant stale or error note  
+Given an account has stale quota data or quota cannot be fetched
+When the account card is displayed
+Then the card shows the relevant stale or error note
 And the card shows a short setup or error hint where applicable
 
 ### BR-009: Email Display
@@ -351,9 +351,9 @@ Email masking and privacy mode are not required in v1.
 
 **BR-009-AC-001: Show real email address**
 
-Given an account has been configured with an email address  
-When the account card is displayed  
-Then the real email address is shown on the card  
+Given an account has been configured with an email address
+When the account card is displayed
+Then the real email address is shown on the card
 And the email address is not masked in v1
 
 ### BR-010: Provider Window Names
@@ -366,9 +366,9 @@ The desklet must not force all providers into generic names if the provider expo
 
 **BR-010-AC-001: Use provider quota window terminology**
 
-Given a provider returns a quota window name  
-When the quota window is displayed  
-Then the desklet shows the provider’s quota window name where available  
+Given a provider returns a quota window name
+When the quota window is displayed
+Then the desklet shows the provider’s quota window name where available
 And the desklet does not replace it with a less accurate generic name
 
 ### BR-011: Account-Level Quota
@@ -381,9 +381,9 @@ Model-level quota is not required in v1.
 
 **BR-011-AC-001: Display account-level quota only**
 
-Given quota data is available for an account  
-When the account card is displayed  
-Then the quota shown represents account-level usage  
+Given quota data is available for an account
+When the account card is displayed
+Then the quota shown represents account-level usage
 And the card does not show model-level quota in v1
 
 ### BR-012: Progress Bar Display
@@ -396,16 +396,16 @@ The display is based on used quota, not remaining quota.
 
 **BR-012-AC-001: Show used percentage as progress bar**
 
-Given quota data is available for a quota window  
-When the quota window is displayed  
-Then the used percentage is displayed as a progress bar  
+Given quota data is available for a quota window
+When the quota window is displayed
+Then the used percentage is displayed as a progress bar
 And the used percentage value is displayed beside or within the progress bar
 
 **BR-012-AC-002: Use used quota as the display basis**
 
-Given a provider returns quota usage data  
-When the desklet displays the quota window  
-Then the progress bar represents used quota  
+Given a provider returns quota usage data
+When the desklet displays the quota window
+Then the progress bar represents used quota
 And it does not use remaining quota as the primary display value
 
 ### BR-013: Reset Time Display
@@ -424,16 +424,16 @@ The desklet must use the LMDE system timezone.
 
 **BR-013-AC-001: Show reset time as relative local time**
 
-Given a provider returns a quota reset time  
-When the reset time is shown on the account card  
-Then the reset time is converted to the LMDE system timezone  
+Given a provider returns a quota reset time
+When the reset time is shown on the account card
+Then the reset time is converted to the LMDE system timezone
 And it is displayed as a relative time
 
 **BR-013-AC-002: Hide reset time when unavailable**
 
-Given a provider does not return a reset time for a quota window  
-When the account card is displayed  
-Then the desklet does not show an incorrect reset time  
+Given a provider does not return a reset time for a quota window
+When the account card is displayed
+Then the desklet does not show an incorrect reset time
 And the card may show that the reset time is unavailable
 
 ## 6.3 Visual State Requirements
@@ -446,9 +446,9 @@ Quota below 50% used must use the low-usage visual state.
 
 **BR-014-AC-001: Show low-usage state**
 
-Given a quota window is below 50% used  
-When the account card is displayed  
-Then the quota indicator uses the low-usage visual state  
+Given a quota window is below 50% used
+When the account card is displayed
+Then the quota indicator uses the low-usage visual state
 And the progress bar is shown in green
 
 ### BR-015: Medium-Usage State
@@ -459,9 +459,9 @@ Quota from 50% used up to below 75% used must use the medium-usage visual state.
 
 **BR-015-AC-001: Show medium-usage state**
 
-Given a quota window is 50% or higher and below 75% used  
-When the account card is displayed  
-Then the quota indicator uses the medium-usage visual state  
+Given a quota window is 50% or higher and below 75% used
+When the account card is displayed
+Then the quota indicator uses the medium-usage visual state
 And the progress bar is shown in orange
 
 ### BR-016: High-Usage State
@@ -472,9 +472,9 @@ Quota at 75% used or above must use the high-usage visual state.
 
 **BR-016-AC-001: Show high-usage state**
 
-Given a quota window is 75% used or higher  
-When the account card is displayed  
-Then the quota indicator uses the high-usage visual state  
+Given a quota window is 75% used or higher
+When the account card is displayed
+Then the quota indicator uses the high-usage visual state
 And the progress bar is shown in red
 
 ### BR-017: Provider Visual Identity
@@ -487,15 +487,15 @@ Provider sections may use different visual boundaries by vendor.
 
 **BR-017-AC-001: Show consistent provider identity**
 
-Given accounts are grouped by provider  
-When the desklet displays provider sections  
-Then each provider section uses a consistent provider icon or label  
+Given accounts are grouped by provider
+When the desklet displays provider sections
+Then each provider section uses a consistent provider icon or label
 And each provider section uses consistent provider styling
 
 **BR-017-AC-002: Distinguish provider sections visually**
 
-Given more than one provider has configured accounts  
-When the desklet displays the account list  
+Given more than one provider has configured accounts
+When the desklet displays the account list
 Then the user can visually distinguish one provider section from another
 
 ### BR-018: No Desktop Notifications
@@ -508,9 +508,9 @@ Warnings are visual changes on the account cards only.
 
 **BR-018-AC-001: Do not show desktop notifications**
 
-Given an account reaches a warning or high-usage state  
-When the account card is displayed  
-Then the warning is shown visually on the card only  
+Given an account reaches a warning or high-usage state
+When the account card is displayed
+Then the warning is shown visually on the card only
 And no desktop notification is shown
 
 ## 6.4 Refresh Requirements
@@ -523,8 +523,8 @@ The desklet must refresh quota information every five minutes.
 
 **BR-019-AC-001: Refresh every five minutes**
 
-Given the desklet is running  
-When five minutes have passed since the last refresh cycle  
+Given the desklet is running
+When five minutes have passed since the last refresh cycle
 Then the desklet starts a new refresh cycle automatically
 
 ### BR-020: Asynchronous Refresh
@@ -537,23 +537,23 @@ A slow or failed account refresh must not block refreshes for other accounts.
 
 **BR-020-AC-001: Refresh accounts asynchronously**
 
-Given multiple provider accounts are configured  
-When a refresh cycle starts  
-Then account refreshes run asynchronously  
+Given multiple provider accounts are configured
+When a refresh cycle starts
+Then account refreshes run asynchronously
 And a slow or failed account refresh does not block other accounts from refreshing
 
-### BR-021: No Manual Refresh
+### BR-021: No Desklet Manual Refresh Button
 
-A manual refresh button is not required in v1.
+A manual refresh button is not required in the passive desklet surface in v1.
 
 #### Acceptance Criteria
 
-**BR-021-AC-001: Exclude manual refresh control**
+**BR-021-AC-001: Exclude desklet manual refresh control**
 
-Given I view the v1 desklet  
-When I interact with the desklet or setup screen  
-Then there is no manual refresh button  
-And quota refresh is controlled by the automatic five-minute refresh cycle
+Given I view the v1 desklet
+When I interact with the desklet
+Then there is no desklet manual refresh button
+And normal quota refresh is controlled by the automatic refresh cycle or systemd timer
 
 ### BR-022: Offline Behaviour
 
@@ -565,10 +565,10 @@ The desklet must keep showing last known quota values where available.
 
 **BR-022-AC-001: Handle offline refresh silently**
 
-Given the machine is offline  
-When the desklet attempts a scheduled refresh  
-Then no desktop notification is shown  
-And available last known values remain visible  
+Given the machine is offline
+When the desklet attempts a scheduled refresh
+Then no desktop notification is shown
+And available last known values remain visible
 And affected account cards are marked as stale where previous data exists
 
 ### BR-023: Battery Behaviour
@@ -579,9 +579,9 @@ The desklet must continue refreshing while the machine is on battery.
 
 **BR-023-AC-001: Continue refreshing on battery**
 
-Given the machine is running on battery power  
-When the five-minute refresh interval is reached  
-Then the desklet starts the scheduled refresh cycle  
+Given the machine is running on battery power
+When the five-minute refresh interval is reached
+Then the desklet starts the scheduled refresh cycle
 And quota refresh is not paused because the machine is on battery
 
 ## 6.5 Stale and Error Handling Requirements
@@ -594,8 +594,8 @@ If an account has existing quota data and the next scheduled refresh fails, the 
 
 **BR-024-AC-001: Mark account stale after one failed update**
 
-Given an account has previous quota data  
-When the next scheduled refresh for that account fails  
+Given an account has previous quota data
+When the next scheduled refresh for that account fails
 Then the account card is marked as stale after that failed update
 
 ### BR-025: Last Known Values
@@ -606,8 +606,8 @@ When an account refresh fails, the desklet must continue showing the previous qu
 
 **BR-025-AC-001: Keep last known quota values**
 
-Given an account has previous quota data  
-When the next refresh for that account fails  
+Given an account has previous quota data
+When the next refresh for that account fails
 Then the previous quota values remain visible on the account card
 
 ### BR-026: Stale Display
@@ -620,15 +620,15 @@ When data is stale, the card must show a stale note and how old the data is.
 
 **BR-026-AC-001: Hide update age while fresh**
 
-Given an account has fresh quota data  
-When the account card is displayed  
+Given an account has fresh quota data
+When the account card is displayed
 Then the card does not need to show the last updated time
 
 **BR-026-AC-002: Show stale age when stale**
 
-Given an account card is stale  
-When the account card is displayed  
-Then the card shows a stale note  
+Given an account card is stale
+When the account card is displayed
+Then the card shows a stale note
 And the card shows how old the stale data is
 
 ### BR-027: Error Hints
@@ -646,8 +646,8 @@ Examples:
 
 **BR-027-AC-001: Show helpful stale or error hint**
 
-Given quota data is unavailable or stale for an account  
-When the account card is displayed  
+Given quota data is unavailable or stale for an account
+When the account card is displayed
 Then the card shows a short hint explaining the likely issue
 
 ### BR-028: Provider Failure Isolation
@@ -660,16 +660,16 @@ If one account fails, other accounts for the same provider must still refresh wh
 
 **BR-028-AC-001: Isolate provider failures**
 
-Given one provider quota refresh fails  
-When other providers can still be refreshed  
-Then the desklet continues to refresh and display those other providers  
+Given one provider quota refresh fails
+When other providers can still be refreshed
+Then the desklet continues to refresh and display those other providers
 And the failed provider accounts show stale or unavailable status as appropriate
 
 **BR-028-AC-002: Isolate account failures**
 
-Given one account refresh fails  
-When other accounts for the same provider can still be refreshed  
-Then the desklet continues to refresh those other accounts  
+Given one account refresh fails
+When other accounts for the same provider can still be refreshed
+Then the desklet continues to refresh those other accounts
 And the failed account shows stale or unavailable status as appropriate
 
 ## 6.6 History and Logging Requirements
@@ -692,9 +692,9 @@ The history file must store:
 
 **BR-029-AC-001: Write quota history entry**
 
-Given a quota refresh succeeds  
-When quota values are updated  
-Then a history entry is written to the local text file  
+Given a quota refresh succeeds
+When quota values are updated
+Then a history entry is written to the local text file
 And the entry includes timestamp, provider, email, quota window, used percentage, reset time and status
 
 ### BR-030: History Retention
@@ -705,14 +705,14 @@ Quota history is kept forever unless the user resets all local data or manually 
 
 **BR-030-AC-001: Keep quota history forever**
 
-Given quota history exists  
-When normal refresh cycles continue  
+Given quota history exists
+When normal refresh cycles continue
 Then old history entries are not automatically deleted
 
 **BR-030-AC-002: Remove history during full reset**
 
-Given quota history exists  
-When I choose reset all local data  
+Given quota history exists
+When I choose reset all local data
 Then quota history is removed as part of the reset
 
 ### BR-031: Local Logs
@@ -727,20 +727,20 @@ Logs must not include provider passwords.
 
 **BR-031-AC-001: Write local logs**
 
-Given the desklet performs setup, authentication or refresh activity  
-When a relevant event occurs  
+Given the desklet performs setup, authentication or refresh activity
+When a relevant event occurs
 Then the desklet may write the event to local logs
 
 **BR-031-AC-002: Exclude provider passwords from logs**
 
-Given local logs are written  
-When log entries are stored  
+Given local logs are written
+When log entries are stored
 Then provider passwords are not written to the logs
 
 **BR-031-AC-003: Allow email addresses in logs**
 
-Given local logs are written  
-When an event relates to a configured account  
+Given local logs are written
+When an event relates to a configured account
 Then the account email address may be included in the local log entry
 
 ## 6.7 Installation and Runtime Requirements
@@ -753,9 +753,9 @@ The product must run as an LMDE/Cinnamon desklet.
 
 **BR-032-AC-001: Run as Cinnamon desklet**
 
-Given the desklet is installed on LMDE with Cinnamon  
-When the user adds the desklet to the desktop  
-Then the quota monitor runs as a Cinnamon desklet  
+Given the desklet is installed on LMDE with Cinnamon
+When the user adds the desklet to the desktop
+Then the quota monitor runs as a Cinnamon desklet
 And the account cards are displayed on the desktop
 
 ### BR-033: Node.js Dependency
@@ -766,9 +766,9 @@ Node.js is acceptable as a v1 dependency.
 
 **BR-033-AC-001: Use Node.js as accepted runtime dependency**
 
-Given v1 is installed  
-When runtime dependencies are checked  
-Then Node.js may be required for provider polling or supporting scripts  
+Given v1 is installed
+When runtime dependencies are checked
+Then Node.js may be required for provider polling or supporting scripts
 And the installation instructions identify Node.js as a dependency
 
 ### BR-034: Terminal Setup
@@ -779,9 +779,9 @@ Terminal setup steps are acceptable in v1.
 
 **BR-034-AC-001: Support terminal-based setup**
 
-Given I am installing v1  
-When setup requires terminal commands  
-Then the installation instructions provide the required commands  
+Given I am installing v1
+When setup requires terminal commands
+Then the installation instructions provide the required commands
 And terminal-based setup is considered acceptable for v1
 
 ### BR-035: No Root Requirement
@@ -792,8 +792,8 @@ The desklet must work without root or admin privileges.
 
 **BR-035-AC-001: Work without root privileges**
 
-Given the desklet is installed for the current user  
-When the desklet runs normally  
+Given the desklet is installed for the current user
+When the desklet runs normally
 Then it does not require root or admin privileges
 
 ### BR-036: Auto-Detection
@@ -804,9 +804,9 @@ The desklet should auto-detect installed tools and common provider profile paths
 
 **BR-036-AC-001: Auto-detect local tools and paths**
 
-Given supported provider tools or profile paths exist on the machine  
-When I open the setup screen  
-Then the desklet attempts to detect them  
+Given supported provider tools or profile paths exist on the machine
+When I open the setup screen
+Then the desklet attempts to detect them
 And detected paths are shown as setup assistance
 
 ## 6.8 Safety and Boundary Requirements
@@ -819,9 +819,9 @@ The desklet must be a passive quota monitor only.
 
 **BR-037-AC-001: Remain passive during monitoring**
 
-Given the desklet is running  
-When it displays or refreshes quota information  
-Then it only reads quota-related information  
+Given the desklet is running
+When it displays or refreshes quota information
+Then it only reads quota-related information
 And it does not perform coding-agent work on the user’s behalf
 
 ### BR-038: No Account Switching
@@ -832,8 +832,8 @@ The desklet must not automatically switch accounts.
 
 **BR-038-AC-001: Do not switch accounts automatically**
 
-Given multiple accounts are configured  
-When one account is close to quota exhaustion  
+Given multiple accounts are configured
+When one account is close to quota exhaustion
 Then the desklet does not automatically switch the active account in any provider tool
 
 ### BR-039: No Account Rotation
@@ -844,9 +844,9 @@ The desklet must not rotate between accounts to avoid provider limits.
 
 **BR-039-AC-001: Do not rotate accounts**
 
-Given multiple accounts are configured for a provider  
-When quota levels change  
-Then the desklet does not rotate accounts  
+Given multiple accounts are configured for a provider
+When quota levels change
+Then the desklet does not rotate accounts
 And it does not trigger behaviour intended to bypass provider limits
 
 ### BR-040: No Quota-Consuming Refresh
@@ -857,10 +857,10 @@ The desklet must not send prompts, start coding-agent sessions, or perform model
 
 **BR-040-AC-001: Do not consume model quota during refresh**
 
-Given the desklet refreshes quota information  
-When provider quota data is requested  
-Then the desklet does not send model prompts  
-And it does not start coding-agent sessions  
+Given the desklet refreshes quota information
+When provider quota data is requested
+Then the desklet does not send model prompts
+And it does not start coding-agent sessions
 And it does not perform model calls merely to update the display
 
 ### BR-041: No Billing Management
@@ -871,11 +871,11 @@ The desklet must not manage subscriptions, billing, credit purchases or top-ups.
 
 **BR-041-AC-001: Exclude billing actions**
 
-Given I use the desklet or setup screen  
-When I interact with provider account information  
-Then the desklet does not provide actions to manage subscriptions  
-And it does not purchase credits  
-And it does not top up accounts  
+Given I use the desklet or setup screen
+When I interact with provider account information
+Then the desklet does not provide actions to manage subscriptions
+And it does not purchase credits
+And it does not top up accounts
 And it does not change provider billing settings
 
 ---
@@ -1048,39 +1048,81 @@ The polling service must apply a per-account progressive back-off strategy to av
 
 **BR-044-AC-001: Reset to min on data change**
 
-Given an account's quota usage, window status, or set of windows changes between two polls  
-When the polling service processes the fresh result  
+Given an account's quota usage, window status, or set of windows changes between two polls
+When the polling service processes the fresh result
 Then the effective poll interval for that account is reset to the configured minimum
 
 **BR-044-AC-002: Back off by ratio on no data change**
 
-Given an account's quota data is unchanged between two polls  
-When the polling service processes the fresh result  
+Given an account's quota data is unchanged between two polls
+When the polling service processes the fresh result
 Then the effective poll interval for that account is multiplied by the provider's configured backoff ratio, up to the configured maximum
 
 **BR-044-AC-003: Back off by ratio on error**
 
-Given a poll attempt for an account fails or returns a non-fresh status  
-When the polling service processes the result  
+Given a poll attempt for an account fails or returns a non-fresh status
+When the polling service processes the result
 Then the effective poll interval for that account is multiplied by the provider's configured backoff ratio, up to the configured maximum
 
 **BR-044-AC-004: Interval stays at max**
 
-Given an account's effective poll interval has reached the configured maximum  
-When successive polls continue to find no data change or return errors  
+Given an account's effective poll interval has reached the configured maximum
+When successive polls continue to find no data change or return errors
 Then the effective poll interval remains at the maximum and does not increase further
 
 **BR-044-AC-005: Skip uses effective interval, not config min**
 
-Given an account's effective poll interval has been backed off beyond the config minimum  
-When the polling service runs and the elapsed time is less than the effective interval  
+Given an account's effective poll interval has been backed off beyond the config minimum
+When the polling service runs and the elapsed time is less than the effective interval
 Then that account is skipped for this poll run
 
 **BR-044-AC-006: Configurable boundaries per provider**
 
-Given provider-level min interval, max interval, and backoff ratio are defined in the codebase, and optional account-level interval overrides are set in config  
-When the polling service runs  
+Given provider-level min interval, max interval, and backoff ratio are defined in the codebase, and optional account-level interval overrides are set in config
+When the polling service runs
 Then each account uses its provider's floor, ceiling, and ratio for normal back-off, while provider `not-before` and `retry-after` values are honoured even above the configured ceiling
+
+### BR-050: Manual Forced Poll Override
+
+The user must be able to deliberately bypass local poll eligibility for a one-off manual refresh from the CLI or setup TUI, without changing normal background polling behaviour.
+
+#### Acceptance Criteria
+
+**BR-050-AC-001: Force a selected account from CLI**
+
+Given an account is not yet eligible for normal polling
+When `aiqm poll --force --provider X --email Y` or `aiqm poll --force --account X:Y` runs
+Then provider polling is attempted for that configured account anyway
+
+**BR-050-AC-002: Force all accounts from CLI**
+
+Given all configured accounts are in back-off
+When `aiqm poll --force` runs
+Then all configured accounts are selected and attempted despite local eligibility state
+
+**BR-050-AC-003: Normal polling remains non-forced**
+
+Given an account is inside its effective poll interval
+When the systemd timer or desklet command runs `aiqm poll --json` without `--force`
+Then the existing skip/back-off behaviour remains unchanged
+
+**BR-050-AC-004: Force selected account from setup TUI**
+
+Given the setup TUI is open and an account is selected
+When I press `r`, confirm refresh selected, and the action runs
+Then that account is force-polled
+
+**BR-050-AC-005: Force all accounts from setup TUI**
+
+Given the setup TUI is open
+When I press `h` or type `refresh-all`, confirm refresh all, and the action runs
+Then every configured account is force-polled
+
+**BR-050-AC-006: Force does not disable future back-off**
+
+Given a forced poll attempt completes or receives provider wait guidance
+When AIQM computes future eligibility
+Then the next effective interval is calculated using the same normal rules, including provider `not-before` and `retry-after` values
 
 ---
 

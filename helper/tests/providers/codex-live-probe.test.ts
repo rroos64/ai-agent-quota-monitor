@@ -213,7 +213,7 @@ describe('runCodexLiveRateLimitsProbe', () => {
       id: 'aiqm-initialize',
       method: 'initialize',
       params: {
-        clientInfo: { name: 'aiqm', title: 'AIQM Codex rate limit probe', version: '1.0.0' },
+        clientInfo: { name: 'aiqm', title: 'AIQM Codex rate limit probe', version: '1.1.0' },
         capabilities: { experimentalApi: true, optOutNotificationMethods: [] }
       }
     });
